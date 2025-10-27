@@ -25,7 +25,7 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router basename={process.env.NODE_ENV === 'production' ? '/ECM-Agent' : ''}>
+      <Router basename={process.env.NODE_ENV === 'production' ? '/ECM-Education-Agent' : ''}>
         <div className="App">
           <Layout>
             <Routes>

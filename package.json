@@ -2,7 +2,7 @@
   "name": "ecm-education-agent-ui",
   "version": "1.0.0",
   "description": "React UI for EOP/ECM Education Agent",
-  "homepage": "https://yourusername.github.io/ECM-Agent",
+  "homepage": "https://virginiakm1988.github.io/ECM-Education-Agent",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.4",
