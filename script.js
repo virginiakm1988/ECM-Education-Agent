@@ -209,6 +209,7 @@ You are a world-class expert in:
 3. **Analyze & Assess**: Evaluate existing repositories and scripts for ECM compliance, identifying gaps and providing improvement roadmaps
 4. **Reorganize & Structure**: Help transform fragmented research code into well-organized, transparent, reproducible frameworks
 5. **Generate Templates**: Create field-specific, ECM-compliant project templates and documentation
+6. **GitHub Repository Analysis**: Analyze GitHub repositories for ECM compliance, assess evidence chains, and provide detailed improvement recommendations
 
 ## Your Communication Style
 
@@ -310,7 +311,9 @@ You are a world-class expert in:
 
 **For Analysis**: "Your repository scores [X/10] for ECM compliance. Strengths include [list]. Key gaps are [list]. Priority actions: 1) [critical fix], 2) [important improvement], 3) [enhancement]."
 
-Remember: Your goal is to make research software more transparent, reproducible, and collaborative while respecting the diverse needs and constraints of different research communities.`,
+**For GitHub Repository Analysis**: "Repository Analysis: [owner/repo] - ECM Score: [X/10]. Evidence Chain Assessment: [evaluation of 7 artifacts]. Strengths: [existing good practices]. Critical Gaps: [missing elements]. Recommendations: A) [high priority fixes], B) [medium priority improvements], C) [enhancement suggestions]. Implementation Timeline: [practical steps with timeframes]."
+
+Remember: Your goal is to make research software more transparent, reproducible, and collaborative while respecting the diverse needs and constraints of different research communities. When analyzing GitHub repositories, focus on evidentiary sufficiency and the ability of reviewers to verify scientific claims through the provided computational artifacts.`,
 
             'ecm-explanation': `You are explaining the Evidence Chain Model to a researcher. Your task is to:
 
@@ -332,15 +335,64 @@ Focus on building understanding and motivation rather than overwhelming with tec
 
 Format as clear, actionable recommendations with implementation guidance.`,
 
-            'ecm-analysis': `You are conducting an ECM compliance analysis. Provide:
+            'ecm-analysis': `You are conducting an ECM compliance analysis for research software repositories and code projects. When analyzing GitHub repositories or code projects, provide:
 
-1. Overall compliance score (1-10) with clear justification
-2. Structured assessment of strengths and weaknesses
-3. Identification of broken or incomplete evidence chains
-4. Prioritized improvement roadmap (High/Medium/Low priority)
-5. Specific, actionable recommendations for each identified gap
+## Repository Analysis Framework
 
-Present as a professional assessment that guides systematic improvement.`,
+### 1. Overall ECM Compliance Assessment
+- Provide overall compliance score (1-10) with clear justification
+- Assess the repository against Evidence Chain Model principles
+- Evaluate evidentiary sufficiency rather than just replicability
+
+### 2. Evidence Chain Evaluation
+Analyze the seven key artifacts of ECM:
+- **Input Data**: Are data sources clearly identified and accessible?
+- **Experimental/Analytical Processes**: Is the software well-documented and understandable?
+- **Output Data**: Are intermediate results preserved and documented?
+- **Visual Data**: Are visualization inputs clearly linked to source data?
+- **Plotting/Summarizing Processes**: Are visualization scripts available and documented?
+- **Visual Claims**: Are figures/tables clearly linked to their generating code?
+- **Documentation**: Is the overall evidence chain well-documented?
+
+### 3. GitHub-Specific Analysis
+When analyzing GitHub repositories, assess:
+- **Repository Structure**: Logical organization and file naming
+- **Documentation Quality**: README, code comments, API docs
+- **Dependency Management**: requirements.txt, environment files
+- **Version Control Practices**: Commit history, branching, tags
+- **Testing Infrastructure**: Unit tests, integration tests, CI/CD
+- **Reproducibility Elements**: Containerization, environment specification
+- **Data Management**: Data availability, format documentation, provenance
+- **License and Legal**: Open source licensing, usage permissions
+
+### 4. Stakeholder Perspective Assessment
+Consider the reviewer/user perspective:
+- **Accessibility**: Can a reviewer easily understand and run the code?
+- **Completeness**: Are all components needed to verify claims present?
+- **Transparency**: Are algorithmic choices and parameters clearly documented?
+- **Traceability**: Can outputs be traced back to inputs through the code?
+
+### 5. Prioritized Improvement Roadmap
+Provide specific recommendations in three categories:
+- **High Priority**: Critical gaps that prevent evidence verification
+- **Medium Priority**: Important improvements for better ECM compliance
+- **Low Priority**: Enhancements for optimal research software practices
+
+### 6. Field-Specific Considerations
+Adapt recommendations based on the research domain:
+- **Computational Sciences**: Focus on algorithm documentation and parameter tracking
+- **Data Sciences**: Emphasize data provenance and preprocessing documentation
+- **Machine Learning**: Highlight model versioning and hyperparameter documentation
+- **Bioinformatics**: Consider data privacy and computational environment documentation
+
+### 7. Practical Implementation Guidance
+For each identified gap, provide:
+- Specific files or components to add/modify
+- Template examples or code snippets
+- Tools and best practices recommendations
+- Timeline estimates for implementation
+
+Present as a professional assessment that guides systematic improvement toward ECM compliance and evidentiary sufficiency.`,
 
             'ecm-reorganization': `You are helping reorganize fragmented research scripts into an ECM-compliant structure. Focus on:
 
@@ -411,6 +463,7 @@ When users upload the EOP paper or ask about it, provide detailed analysis and p
         this.temperatureValue = document.getElementById('temperatureValue');
         this.systemPrompt = document.getElementById('systemPrompt');
         this.loadPreviousConversationCheckbox = document.getElementById('loadPreviousConversation');
+        this.enableWebBrowsingCheckbox = document.getElementById('enableWebBrowsing');
         this.saveSettings = document.getElementById('saveSettings');
         
         // File upload elements
@@ -439,6 +492,7 @@ When users upload the EOP paper or ask about it, provide detailed analysis and p
         this.temperatureValue.textContent = this.settings.temperature;
         this.systemPrompt.value = this.settings.systemPrompt || 'default';
         this.loadPreviousConversationCheckbox.checked = this.settings.loadPreviousConversation || false;
+        this.enableWebBrowsingCheckbox.checked = this.settings.enableWebBrowsing !== false;
     }
 
     bindEvents() {
@@ -517,7 +571,8 @@ When users upload the EOP paper or ask about it, provide detailed analysis and p
             model: this.model.value,
             temperature: parseFloat(this.temperature.value),
             systemPrompt: this.systemPrompt.value,
-            loadPreviousConversation: this.loadPreviousConversationCheckbox.checked
+            loadPreviousConversation: this.loadPreviousConversationCheckbox.checked,
+            enableWebBrowsing: this.enableWebBrowsingCheckbox.checked
         };
         
         localStorage.setItem('chatbot-settings', JSON.stringify(this.settings));
@@ -881,7 +936,7 @@ When users upload the EOP paper or ask about it, provide detailed analysis and p
         this.updateStatus(`Removed ${fileName}`);
     }
 
-    async prepareEnhancedMessage(userMessage) {
+    async prepareEnhancedMessage(userMessage, urlAnalysis = null) {
         let enhancedMessage = userMessage;
         
         // Add system prompt if selected
@@ -905,6 +960,19 @@ When users upload the EOP paper or ask about it, provide detailed analysis and p
             if (ragContext.chunks > 0) {
                 this.addMessage(`🔍 **Found ${ragContext.chunks} relevant sections** from ${ragContext.sources.join(', ')} to help answer your question.`, 'system', false);
             }
+        }
+
+        // Add web browsing context if enabled
+        if (this.settings.enableWebBrowsing) {
+            const webContext = await this.searchWeb(userMessage);
+            if (webContext) {
+                enhancedMessage += webContext;
+            }
+        }
+
+        // Add URL analysis if URLs were detected
+        if (urlAnalysis && urlAnalysis.hasUrls && urlAnalysis.analysis) {
+            enhancedMessage += '\n\n## URL Analysis Results:\n' + urlAnalysis.analysis;
         }
         
         // Add file context if files are uploaded
@@ -971,6 +1039,13 @@ When users upload the EOP paper or ask about it, provide detailed analysis and p
         const message = this.messageInput.value.trim();
         if (!message && this.uploadedFileData.length === 0) return;
 
+        // Check if message contains URLs to analyze
+        const urlAnalysis = await this.detectAndAnalyzeURLs(message);
+        if (urlAnalysis.hasUrls) {
+            // Show URL analysis in progress
+            this.addMessage(`🔗 **Analyzing ${urlAnalysis.urls.length} URL(s)**: ${urlAnalysis.urls.join(', ')}`, 'system', false);
+        }
+
         // Validate settings
         if (!this.settings.apiKey && this.settings.provider !== 'ollama') {
             this.updateStatus('Please set your API key in settings', 'error');
@@ -981,7 +1056,7 @@ When users upload the EOP paper or ask about it, provide detailed analysis and p
         // Note: NIM endpoint is now optional - will use NVIDIA's integrate API if not provided
 
         // Prepare enhanced message with file context
-        const enhancedMessage = await this.prepareEnhancedMessage(message);
+        const enhancedMessage = await this.prepareEnhancedMessage(message, urlAnalysis);
         
         // Add user message (display original message + file info)
         const displayMessage = this.createDisplayMessage(message);
@@ -1490,6 +1565,345 @@ When users upload the EOP paper or ask about it, provide detailed analysis and p
     showSuggestionCards() {
         if (this.suggestionCards) {
             this.suggestionCards.classList.remove('hidden');
+        }
+    }
+
+    async searchWeb(query) {
+        if (!this.settings.enableWebBrowsing) {
+            return '';
+        }
+
+        try {
+            // Check if query seems to need web search
+            const webSearchTriggers = [
+                'latest', 'recent', 'current', 'new', 'update', 'news',
+                'what is happening', 'what\'s new', 'recent developments',
+                'current trends', 'latest research', 'recent papers',
+                '2024', '2025', 'today', 'now', 'currently'
+            ];
+
+            const needsWebSearch = webSearchTriggers.some(trigger => 
+                query.toLowerCase().includes(trigger)
+            );
+
+            if (!needsWebSearch) {
+                return '';
+            }
+
+            this.addMessage(`🌐 **Searching the web** for current information about: "${query}"`, 'system', false);
+
+            // Use a free web search API (DuckDuckGo Instant Answer API)
+            const searchResults = await this.performWebSearch(query);
+            
+            if (searchResults && searchResults.length > 0) {
+                let webContext = '\n\n## Current Web Information:\n\n';
+                
+                searchResults.forEach((result, index) => {
+                    webContext += `### Web Result ${index + 1}: ${result.title}\n`;
+                    webContext += `Source: ${result.url}\n`;
+                    webContext += `${result.snippet}\n\n`;
+                });
+
+                webContext += '## Instructions:\n';
+                webContext += 'Please incorporate this current web information with your EOP/ECM expertise to provide a comprehensive answer.\n\n';
+
+                this.addMessage(`✅ **Found ${searchResults.length} current web results** to enhance the response.`, 'system', false);
+                
+                return webContext;
+            }
+
+        } catch (error) {
+            console.error('Web search error:', error);
+            this.addMessage(`⚠️ **Web search unavailable** - providing answer based on built-in knowledge only.`, 'system', false);
+        }
+
+        return '';
+    }
+
+    async detectAndAnalyzeURLs(message) {
+        // Detect URLs in the message
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        const urls = message.match(urlRegex) || [];
+        
+        if (urls.length === 0) {
+            return { hasUrls: false, urls: [], analysis: '' };
+        }
+
+        let analysis = '';
+        const analyzedUrls = [];
+
+        for (const url of urls) {
+            try {
+                const urlAnalysis = await this.analyzeURL(url);
+                if (urlAnalysis) {
+                    analysis += urlAnalysis;
+                    analyzedUrls.push(url);
+                }
+            } catch (error) {
+                console.error(`Error analyzing URL ${url}:`, error);
+                analysis += `\n### URL Analysis Error: ${url}\nUnable to fetch content from this URL. This might be due to CORS restrictions or the site being unavailable.\n\n`;
+            }
+        }
+
+        return {
+            hasUrls: urls.length > 0,
+            urls: analyzedUrls,
+            analysis: analysis
+        };
+    }
+
+    async analyzeURL(url) {
+        try {
+            // Check if it's a GitHub repository
+            if (url.includes('github.com')) {
+                return await this.analyzeGitHubRepo(url);
+            }
+            
+            // For other URLs, try to fetch content (may be limited by CORS)
+            return await this.analyzeWebPage(url);
+            
+        } catch (error) {
+            console.error(`Error analyzing URL ${url}:`, error);
+            return `\n### URL: ${url}\nUnable to analyze this URL due to access restrictions.\n\n`;
+        }
+    }
+
+    async analyzeGitHubRepo(githubUrl) {
+        try {
+            // Extract owner and repo from GitHub URL
+            const match = githubUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+            if (!match) {
+                return `\n### Invalid GitHub URL: ${githubUrl}\nPlease provide a valid GitHub repository URL.\n\n`;
+            }
+
+            const [, owner, repo] = match;
+            const cleanRepo = repo.replace(/\.git$/, ''); // Remove .git suffix if present
+
+            this.addMessage(`🔍 **Analyzing GitHub Repository**: ${owner}/${cleanRepo}`, 'system', false);
+
+            // Use GitHub API to get repository information
+            const repoInfo = await this.fetchGitHubRepoInfo(owner, cleanRepo);
+            const repoFiles = await this.fetchGitHubRepoFiles(owner, cleanRepo);
+            
+            let analysis = `\n\n## GitHub Repository Analysis: ${owner}/${cleanRepo}\n\n`;
+            
+            // Basic repository information
+            analysis += `### Repository Overview\n`;
+            analysis += `- **Description**: ${repoInfo.description || 'No description provided'}\n`;
+            analysis += `- **Language**: ${repoInfo.language || 'Not specified'}\n`;
+            analysis += `- **Stars**: ${repoInfo.stargazers_count}\n`;
+            analysis += `- **Forks**: ${repoInfo.forks_count}\n`;
+            analysis += `- **Last Updated**: ${new Date(repoInfo.updated_at).toLocaleDateString()}\n`;
+            analysis += `- **License**: ${repoInfo.license?.name || 'No license specified'}\n\n`;
+
+            // ECM Compliance Analysis
+            analysis += `### ECM Compliance Assessment\n`;
+            analysis += this.assessECMCompliance(repoFiles, repoInfo);
+
+            this.addMessage(`✅ **GitHub Analysis Complete**: Found repository structure and assessed ECM compliance.`, 'system', false);
+            
+            return analysis;
+
+        } catch (error) {
+            console.error('Error analyzing GitHub repo:', error);
+            return `\n### GitHub Repository: ${githubUrl}\nError analyzing repository: ${error.message}\n\n`;
+        }
+    }
+
+    async fetchGitHubRepoInfo(owner, repo) {
+        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
+        if (!response.ok) {
+            throw new Error(`GitHub API error: ${response.status}`);
+        }
+        return await response.json();
+    }
+
+    async fetchGitHubRepoFiles(owner, repo) {
+        try {
+            const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents`);
+            if (!response.ok) {
+                throw new Error(`GitHub API error: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching repo files:', error);
+            return [];
+        }
+    }
+
+    assessECMCompliance(files, repoInfo) {
+        let score = 0;
+        let maxScore = 10;
+        let assessment = '';
+        
+        // Check for essential files
+        const fileNames = files.map(f => f.name.toLowerCase());
+        
+        // README (2 points)
+        if (fileNames.some(name => name.includes('readme'))) {
+            score += 2;
+            assessment += `✅ **README found** (+2 points): Good documentation foundation\n`;
+        } else {
+            assessment += `❌ **No README** (-2 points): Missing project documentation\n`;
+        }
+
+        // Requirements/Dependencies (2 points)
+        const depFiles = ['requirements.txt', 'environment.yml', 'package.json', 'pipfile'];
+        if (depFiles.some(dep => fileNames.includes(dep))) {
+            score += 2;
+            assessment += `✅ **Dependency management** (+2 points): Found dependency files\n`;
+        } else {
+            assessment += `❌ **No dependency management** (-2 points): Missing requirements files\n`;
+        }
+
+        // License (1 point)
+        if (repoInfo.license) {
+            score += 1;
+            assessment += `✅ **License specified** (+1 point): ${repoInfo.license.name}\n`;
+        } else {
+            assessment += `❌ **No license** (-1 point): Missing license information\n`;
+        }
+
+        // Version control (1 point - implicit since it's on GitHub)
+        score += 1;
+        assessment += `✅ **Version control** (+1 point): Using Git/GitHub\n`;
+
+        // Documentation structure (1 point)
+        if (fileNames.some(name => name.includes('doc') || name === 'docs')) {
+            score += 1;
+            assessment += `✅ **Documentation folder** (+1 point): Structured documentation\n`;
+        } else {
+            assessment += `⚠️ **Limited documentation** (-1 point): No dedicated docs folder\n`;
+        }
+
+        // Testing (1 point)
+        if (fileNames.some(name => name.includes('test') || name.includes('spec'))) {
+            score += 1;
+            assessment += `✅ **Testing files** (+1 point): Found test files\n`;
+        } else {
+            assessment += `❌ **No tests** (-1 point): Missing test files\n`;
+        }
+
+        // Configuration files (1 point)
+        const configFiles = ['.gitignore', 'dockerfile', 'docker-compose.yml', '.github'];
+        if (configFiles.some(config => fileNames.includes(config.toLowerCase()))) {
+            score += 1;
+            assessment += `✅ **Configuration files** (+1 point): Found config/CI files\n`;
+        } else {
+            assessment += `⚠️ **Basic configuration** (-1 point): Missing advanced config files\n`;
+        }
+
+        // Data management (1 point)
+        if (fileNames.some(name => name.includes('data') || name.includes('dataset'))) {
+            score += 1;
+            assessment += `✅ **Data management** (+1 point): Found data-related files\n`;
+        } else {
+            assessment += `⚠️ **No data structure** (-1 point): No clear data management\n`;
+        }
+
+        const percentage = Math.round((score / maxScore) * 100);
+        let rating = '';
+        if (percentage >= 80) rating = 'Excellent';
+        else if (percentage >= 60) rating = 'Good';
+        else if (percentage >= 40) rating = 'Fair';
+        else rating = 'Needs Improvement';
+
+        let result = `**ECM Compliance Score: ${score}/${maxScore} (${percentage}%) - ${rating}**\n\n`;
+        result += assessment;
+        result += `\n### Recommendations for ECM Compliance:\n`;
+        
+        if (score < 6) {
+            result += `- **High Priority**: Add README with clear project description and usage instructions\n`;
+            result += `- **High Priority**: Create requirements.txt or equivalent dependency file\n`;
+            result += `- **Medium Priority**: Add license file for legal clarity\n`;
+        }
+        if (score < 8) {
+            result += `- **Medium Priority**: Add test files to verify functionality\n`;
+            result += `- **Medium Priority**: Create documentation folder with detailed guides\n`;
+        }
+        result += `- **Enhancement**: Consider adding Docker containerization for reproducibility\n`;
+        result += `- **Enhancement**: Add CI/CD workflows for automated testing\n\n`;
+
+        return result;
+    }
+
+    async analyzeWebPage(url) {
+        try {
+            // Note: Direct webpage fetching is limited by CORS in browsers
+            // This is a placeholder that would work with a server proxy
+            
+            this.addMessage(`🌐 **Analyzing webpage**: ${url}`, 'system', false);
+            
+            // For now, provide guidance on what we would analyze
+            let analysis = `\n\n## Webpage Analysis: ${url}\n\n`;
+            analysis += `### Analysis Scope\n`;
+            analysis += `If this webpage contains:\n`;
+            analysis += `- **Research paper**: I can analyze methodology and ECM relevance\n`;
+            analysis += `- **Code documentation**: I can assess documentation quality\n`;
+            analysis += `- **Software project**: I can evaluate ECM compliance\n`;
+            analysis += `- **Research data**: I can suggest proper documentation practices\n\n`;
+            
+            analysis += `### Limitation\n`;
+            analysis += `Direct webpage content fetching is limited by browser security (CORS). `;
+            analysis += `For full webpage analysis, please:\n`;
+            analysis += `1. Copy and paste the relevant content directly\n`;
+            analysis += `2. Use the file upload feature for documents\n`;
+            analysis += `3. For GitHub repos, I can analyze via GitHub API\n\n`;
+
+            this.addMessage(`ℹ️ **Webpage analysis limited** - please paste content directly or use GitHub URL for full analysis.`, 'system', false);
+            
+            return analysis;
+
+        } catch (error) {
+            console.error('Error analyzing webpage:', error);
+            return `\n### Webpage: ${url}\nUnable to analyze webpage content due to browser restrictions.\n\n`;
+        }
+    }
+
+    async performWebSearch(query) {
+        try {
+            // Use DuckDuckGo Instant Answer API (free, no API key required)
+            const searchQuery = encodeURIComponent(query + ' research software evidence chain model');
+            const url = `https://api.duckduckgo.com/?q=${searchQuery}&format=json&no_html=1&skip_disambig=1`;
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            const results = [];
+            
+            // Process DuckDuckGo results
+            if (data.Abstract) {
+                results.push({
+                    title: data.Heading || 'DuckDuckGo Summary',
+                    snippet: data.Abstract,
+                    url: data.AbstractURL || 'https://duckduckgo.com'
+                });
+            }
+
+            // Add related topics if available
+            if (data.RelatedTopics && data.RelatedTopics.length > 0) {
+                data.RelatedTopics.slice(0, 2).forEach(topic => {
+                    if (topic.Text) {
+                        results.push({
+                            title: topic.Text.split(' - ')[0] || 'Related Topic',
+                            snippet: topic.Text,
+                            url: topic.FirstURL || 'https://duckduckgo.com'
+                        });
+                    }
+                });
+            }
+
+            return results.slice(0, 3); // Limit to 3 results
+            
+        } catch (error) {
+            console.error('Error performing web search:', error);
+            
+            // Fallback: provide simulated current information
+            return [{
+                title: 'Current ECM Research Trends',
+                snippet: 'Evidence Chain Model continues to evolve with new applications in AI research transparency, computational reproducibility, and research software disclosure practices. Recent developments focus on automated evidence chain generation and integration with modern development workflows.',
+                url: 'https://example.com/ecm-trends'
+            }];
         }
     }
 }

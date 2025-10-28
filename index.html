@@ -77,6 +77,13 @@
                     </label>
                     <small>When enabled, previous chat history will appear when you refresh the page</small>
                 </div>
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="enableWebBrowsing" checked> 
+                        Enable web browsing
+                    </label>
+                    <small>Allow the agent to search the web for current information</small>
+                </div>
                 <button class="save-btn" id="saveSettings">Save Settings</button>
             </div>
         </div>
@@ -140,6 +147,14 @@
                         <div class="suggestion-content">
                             <h4>Case Study</h4>
                             <p>What does the AlphaFold3 case teach us about research software disclosure?</p>
+                        </div>
+                    </div>
+                    
+                    <div class="suggestion-card" onclick="chatBot.sendSuggestion('Analyze this GitHub repository for ECM compliance: https://github.com/example/research-project')">
+                        <div class="suggestion-icon">🔗</div>
+                        <div class="suggestion-content">
+                            <h4>Analyze URL</h4>
+                            <p>Paste any GitHub repository URL to get ECM compliance analysis</p>
                         </div>
                     </div>
                 </div>
