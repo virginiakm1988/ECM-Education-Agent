@@ -70,6 +70,13 @@
                     </select>
                     <small>Choose a specialized prompt for your research needs</small>
                 </div>
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="loadPreviousConversation"> 
+                        Load previous conversation on refresh
+                    </label>
+                    <small>When enabled, previous chat history will appear when you refresh the page</small>
+                </div>
                 <button class="save-btn" id="saveSettings">Save Settings</button>
             </div>
         </div>
@@ -83,6 +90,57 @@
                     </div>
                     <div class="message-content">
                         <p>Hello! I'm your <strong>EOP/ECM Education Agent</strong>, specialized in helping researchers implement transparent, reproducible research software practices. I can analyze your code, provide ECM-compliant templates, and guide you through Evidence Chain Model principles. I also remember our conversations for better continuity. How can I assist with your research today?</p>
+                    </div>
+                </div>
+                
+                <!-- Suggestion Cards -->
+                <div class="suggestion-cards" id="suggestionCards">
+                    <div class="suggestion-card" onclick="chatBot.sendSuggestion('Can you explain the Evidence Chain Model to me as if I\'m a computer scientist?')">
+                        <div class="suggestion-icon">🔗</div>
+                        <div class="suggestion-content">
+                            <h4>Explain to me</h4>
+                            <p>Can you explain the Evidence Chain Model to me as if I'm a computer scientist?</p>
+                        </div>
+                    </div>
+                    
+                    <div class="suggestion-card" onclick="chatBot.sendSuggestion('My repository currently contains a Python script and a data file. What should I add next to make it ECM-compliant?')">
+                        <div class="suggestion-icon">🛠️</div>
+                        <div class="suggestion-content">
+                            <h4>Guide me</h4>
+                            <p>My repository currently contains a Python script and a data file. What should I add next to make it ECM-compliant?</p>
+                        </div>
+                    </div>
+                    
+                    <div class="suggestion-card" onclick="chatBot.sendSuggestion('What are the key differences between replicability and evidentiary sufficiency according to the EOP paper?')">
+                        <div class="suggestion-icon">📚</div>
+                        <div class="suggestion-content">
+                            <h4>EOP Knowledge</h4>
+                            <p>What are the key differences between replicability and evidentiary sufficiency according to the EOP paper?</p>
+                        </div>
+                    </div>
+                    
+                    <div class="suggestion-card" onclick="chatBot.sendSuggestion('Can you create an ECM-compliant project template for a machine learning research project?')">
+                        <div class="suggestion-icon">📋</div>
+                        <div class="suggestion-content">
+                            <h4>Create Template</h4>
+                            <p>Can you create an ECM-compliant project template for a machine learning research project?</p>
+                        </div>
+                    </div>
+                    
+                    <div class="suggestion-card" onclick="chatBot.sendSuggestion('How do I handle disclosure barriers when implementing ECM in my research?')">
+                        <div class="suggestion-icon">🔒</div>
+                        <div class="suggestion-content">
+                            <h4>Handle Constraints</h4>
+                            <p>How do I handle disclosure barriers when implementing ECM in my research?</p>
+                        </div>
+                    </div>
+                    
+                    <div class="suggestion-card" onclick="chatBot.sendSuggestion('What does the AlphaFold3 case teach us about research software disclosure?')">
+                        <div class="suggestion-icon">🧬</div>
+                        <div class="suggestion-content">
+                            <h4>Case Study</h4>
+                            <p>What does the AlphaFold3 case teach us about research software disclosure?</p>
+                        </div>
                     </div>
                 </div>
             </div>

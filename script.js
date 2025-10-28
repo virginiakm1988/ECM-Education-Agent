@@ -10,7 +10,10 @@ class ChatBot {
         this.updateModelOptions();
         this.toggleNimEndpoint();
         this.initializeRAG();
-        this.loadPreviousConversation();
+        // Only load previous conversation if user wants it (can be controlled via settings)
+        if (this.settings.loadPreviousConversation !== false) {
+            this.loadPreviousConversation();
+        }
         this.updateStatus('Ready');
     }
 
@@ -407,6 +410,7 @@ When users upload the EOP paper or ask about it, provide detailed analysis and p
         this.temperature = document.getElementById('temperature');
         this.temperatureValue = document.getElementById('temperatureValue');
         this.systemPrompt = document.getElementById('systemPrompt');
+        this.loadPreviousConversationCheckbox = document.getElementById('loadPreviousConversation');
         this.saveSettings = document.getElementById('saveSettings');
         
         // File upload elements
@@ -423,6 +427,9 @@ When users upload the EOP paper or ask about it, provide detailed analysis and p
         this.memoryEnabled = true;
         this.maxMemoryMessages = 20; // Keep last 20 exchanges
         
+        // Suggestion cards
+        this.suggestionCards = document.getElementById('suggestionCards');
+        
         // Load saved settings into UI
         this.llmProvider.value = this.settings.provider;
         this.apiKey.value = this.settings.apiKey;
@@ -431,6 +438,7 @@ When users upload the EOP paper or ask about it, provide detailed analysis and p
         this.temperature.value = this.settings.temperature;
         this.temperatureValue.textContent = this.settings.temperature;
         this.systemPrompt.value = this.settings.systemPrompt || 'default';
+        this.loadPreviousConversationCheckbox.checked = this.settings.loadPreviousConversation || false;
     }
 
     bindEvents() {
@@ -493,7 +501,8 @@ When users upload the EOP paper or ask about it, provide detailed analysis and p
             nimEndpoint: '',
             model: 'gemini-1.5-flash-latest',
             temperature: 0.7,
-            systemPrompt: 'ecm-main' // Default to ECM Education Agent
+            systemPrompt: 'ecm-main', // Default to ECM Education Agent
+            loadPreviousConversation: false // Default to NOT loading previous conversations on refresh
         };
         
         const saved = localStorage.getItem('chatbot-settings');
@@ -507,7 +516,8 @@ When users upload the EOP paper or ask about it, provide detailed analysis and p
             nimEndpoint: this.nimEndpoint.value,
             model: this.model.value,
             temperature: parseFloat(this.temperature.value),
-            systemPrompt: this.systemPrompt.value
+            systemPrompt: this.systemPrompt.value,
+            loadPreviousConversation: this.loadPreviousConversationCheckbox.checked
         };
         
         localStorage.setItem('chatbot-settings', JSON.stringify(this.settings));
@@ -619,7 +629,8 @@ When users upload the EOP paper or ask about it, provide detailed analysis and p
     }
 
     loadPreviousConversation() {
-        if (this.conversationHistory.length > 0) {
+        // Only load previous conversation on initial startup, not after clearing
+        if (this.conversationHistory.length > 0 && this.messages.length <= 1) {
             // Load the last few messages to show context
             const recentMessages = this.conversationHistory.slice(-6); // Show last 3 exchanges
             recentMessages.forEach(msg => {
@@ -998,6 +1009,9 @@ When users upload the EOP paper or ask about it, provide detailed analysis and p
         // Clear uploaded files after sending
         this.clearUploadedFiles();
         
+        // Hide suggestion cards after first message
+        this.hideSuggestionCards();
+        
         // Disable send button and show typing
         this.sendBtn.disabled = true;
         this.showTyping(true);
@@ -1338,21 +1352,162 @@ When users upload the EOP paper or ask about it, provide detailed analysis and p
         
         if (choice === '1') {
             // Clear only current chat display
-            this.chatMessages.innerHTML = '';
+            this.chatMessages.innerHTML = `
+                <div class="message bot-message">
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>Hello! I'm your <strong>EOP/ECM Education Agent</strong>, specialized in helping researchers implement transparent, reproducible research software practices. I can analyze your code, provide ECM-compliant templates, and guide you through Evidence Chain Model principles. I also remember our conversations for better continuity. How can I assist with your research today?</p>
+                    </div>
+                </div>
+                
+                <!-- Suggestion Cards -->
+                <div class="suggestion-cards" id="suggestionCards">
+                    <div class="suggestion-card" onclick="chatBot.sendSuggestion('Can you explain the Evidence Chain Model to me as if I\\'m a computer scientist?')">
+                        <div class="suggestion-icon">🔗</div>
+                        <div class="suggestion-content">
+                            <h4>Explain to me</h4>
+                            <p>Can you explain the Evidence Chain Model to me as if I'm a computer scientist?</p>
+                        </div>
+                    </div>
+                    
+                    <div class="suggestion-card" onclick="chatBot.sendSuggestion('My repository currently contains a Python script and a data file. What should I add next to make it ECM-compliant?')">
+                        <div class="suggestion-icon">🛠️</div>
+                        <div class="suggestion-content">
+                            <h4>Guide me</h4>
+                            <p>My repository currently contains a Python script and a data file. What should I add next to make it ECM-compliant?</p>
+                        </div>
+                    </div>
+                    
+                    <div class="suggestion-card" onclick="chatBot.sendSuggestion('What are the key differences between replicability and evidentiary sufficiency according to the EOP paper?')">
+                        <div class="suggestion-icon">📚</div>
+                        <div class="suggestion-content">
+                            <h4>EOP Knowledge</h4>
+                            <p>What are the key differences between replicability and evidentiary sufficiency according to the EOP paper?</p>
+                        </div>
+                    </div>
+                    
+                    <div class="suggestion-card" onclick="chatBot.sendSuggestion('Can you create an ECM-compliant project template for a machine learning research project?')">
+                        <div class="suggestion-icon">📋</div>
+                        <div class="suggestion-content">
+                            <h4>Create Template</h4>
+                            <p>Can you create an ECM-compliant project template for a machine learning research project?</p>
+                        </div>
+                    </div>
+                    
+                    <div class="suggestion-card" onclick="chatBot.sendSuggestion('How do I handle disclosure barriers when implementing ECM in my research?')">
+                        <div class="suggestion-icon">🔒</div>
+                        <div class="suggestion-content">
+                            <h4>Handle Constraints</h4>
+                            <p>How do I handle disclosure barriers when implementing ECM in my research?</p>
+                        </div>
+                    </div>
+                    
+                    <div class="suggestion-card" onclick="chatBot.sendSuggestion('What does the AlphaFold3 case teach us about research software disclosure?')">
+                        <div class="suggestion-icon">🧬</div>
+                        <div class="suggestion-content">
+                            <h4>Case Study</h4>
+                            <p>What does the AlphaFold3 case teach us about research software disclosure?</p>
+                        </div>
+                    </div>
+                </div>
+            `;
             this.messages = [];
-            this.addMessage("Hello! I'm your EOP/ECM Education Agent. I can help you understand and implement Evidence Chain Model principles for transparent, reproducible research software. I remember our previous conversations to provide better continuity. How can I assist you today?", 'bot', false);
+            // Re-initialize suggestion cards element
+            this.suggestionCards = document.getElementById('suggestionCards');
+            // Don't load previous conversation after clearing
             this.updateStatus('Current chat cleared (memory preserved)');
             setTimeout(() => this.updateStatus('Ready'), 2000);
         } else if (choice === '2') {
             // Clear everything including memory
-            this.chatMessages.innerHTML = '';
+            this.chatMessages.innerHTML = `
+                <div class="message bot-message">
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>Hello! I'm your <strong>EOP/ECM Education Agent</strong>, specialized in helping researchers implement transparent, reproducible research software practices. I can analyze your code, provide ECM-compliant templates, and guide you through Evidence Chain Model principles. How can I assist with your research today?</p>
+                    </div>
+                </div>
+                
+                <!-- Suggestion Cards -->
+                <div class="suggestion-cards" id="suggestionCards">
+                    <div class="suggestion-card" onclick="chatBot.sendSuggestion('Can you explain the Evidence Chain Model to me as if I\\'m a computer scientist?')">
+                        <div class="suggestion-icon">🔗</div>
+                        <div class="suggestion-content">
+                            <h4>Explain to me</h4>
+                            <p>Can you explain the Evidence Chain Model to me as if I'm a computer scientist?</p>
+                        </div>
+                    </div>
+                    
+                    <div class="suggestion-card" onclick="chatBot.sendSuggestion('My repository currently contains a Python script and a data file. What should I add next to make it ECM-compliant?')">
+                        <div class="suggestion-icon">🛠️</div>
+                        <div class="suggestion-content">
+                            <h4>Guide me</h4>
+                            <p>My repository currently contains a Python script and a data file. What should I add next to make it ECM-compliant?</p>
+                        </div>
+                    </div>
+                    
+                    <div class="suggestion-card" onclick="chatBot.sendSuggestion('What are the key differences between replicability and evidentiary sufficiency according to the EOP paper?')">
+                        <div class="suggestion-icon">📚</div>
+                        <div class="suggestion-content">
+                            <h4>EOP Knowledge</h4>
+                            <p>What are the key differences between replicability and evidentiary sufficiency according to the EOP paper?</p>
+                        </div>
+                    </div>
+                    
+                    <div class="suggestion-card" onclick="chatBot.sendSuggestion('Can you create an ECM-compliant project template for a machine learning research project?')">
+                        <div class="suggestion-icon">📋</div>
+                        <div class="suggestion-content">
+                            <h4>Create Template</h4>
+                            <p>Can you create an ECM-compliant project template for a machine learning research project?</p>
+                        </div>
+                    </div>
+                    
+                    <div class="suggestion-card" onclick="chatBot.sendSuggestion('How do I handle disclosure barriers when implementing ECM in my research?')">
+                        <div class="suggestion-icon">🔒</div>
+                        <div class="suggestion-content">
+                            <h4>Handle Constraints</h4>
+                            <p>How do I handle disclosure barriers when implementing ECM in my research?</p>
+                        </div>
+                    </div>
+                    
+                    <div class="suggestion-card" onclick="chatBot.sendSuggestion('What does the AlphaFold3 case teach us about research software disclosure?')">
+                        <div class="suggestion-icon">🧬</div>
+                        <div class="suggestion-content">
+                            <h4>Case Study</h4>
+                            <p>What does the AlphaFold3 case teach us about research software disclosure?</p>
+                        </div>
+                    </div>
+                </div>
+            `;
             this.messages = [];
             this.clearConversationHistory();
-            this.addMessage("Hello! I'm your EOP/ECM Education Agent. I can help you understand and implement Evidence Chain Model principles for transparent, reproducible research software. How can I assist you today?", 'bot', false);
+            // Re-initialize suggestion cards element
+            this.suggestionCards = document.getElementById('suggestionCards');
+            // Don't load previous conversation after clearing
             this.updateStatus('Chat and memory cleared');
             setTimeout(() => this.updateStatus('Ready'), 2000);
         }
         // Choice 3 or anything else cancels
+    }
+
+    sendSuggestion(suggestionText) {
+        this.messageInput.value = suggestionText;
+        this.sendMessage();
+    }
+
+    hideSuggestionCards() {
+        if (this.suggestionCards) {
+            this.suggestionCards.classList.add('hidden');
+        }
+    }
+
+    showSuggestionCards() {
+        if (this.suggestionCards) {
+            this.suggestionCards.classList.remove('hidden');
+        }
     }
 }
 
