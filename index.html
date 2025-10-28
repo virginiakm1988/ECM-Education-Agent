@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbot - Multi-LLM Support</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="rag_system.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-robot"></i> AI Chatbot</h1>
+                <button class="settings-btn" id="settingsBtn">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Settings Panel -->
+        <div class="settings-panel" id="settingsPanel">
+            <div class="settings-content">
+                <h3>Settings</h3>
+                <div class="setting-group">
+                    <label for="llmProvider">LLM Provider:</label>
+                    <select id="llmProvider">
+                        <option value="gemini">Google Gemini</option>
+                        <option value="openai">OpenAI GPT</option>
+                        <option value="anthropic">Anthropic Claude</option>
+                        <option value="nvidia-nim">NVIDIA NIM</option>
+                        <option value="ollama">Ollama (Local)</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label for="apiKey">API Key:</label>
+                    <input type="password" id="apiKey" placeholder="Enter your API key">
+                    <small>Your API key is stored locally and never sent to our servers</small>
+                </div>
+                <div class="setting-group" id="nimEndpointGroup" style="display: none;">
+                    <label for="nimEndpoint">NIM Endpoint URL (Optional):</label>
+                    <input type="text" id="nimEndpoint" placeholder="Leave empty to use NVIDIA's integrate API">
+                    <small>Leave empty to use NVIDIA's hosted API, or enter your custom NIM endpoint</small>
+                </div>
+                <div class="setting-group">
+                    <label for="model">Model:</label>
+                    <select id="model">
+                        <option value="gemini-pro">Gemini Pro</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label for="temperature">Temperature:</label>
+                    <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.7">
+                    <span id="temperatureValue">0.7</span>
+                </div>
+                <div class="setting-group">
+                    <label for="systemPrompt">System Prompt:</label>
+                    <select id="systemPrompt">
+                        <option value="default">Default Assistant</option>
+                        <option value="ecm-main">EOP/ECM Education Agent</option>
+                        <option value="eop-paper-expert">EOP Paper Expert</option>
+                        <option value="ecm-explanation">ECM Significance Explanation</option>
+                        <option value="ecm-development">Development Guidance</option>
+                        <option value="ecm-analysis">Repository Analysis</option>
+                        <option value="ecm-reorganization">Script Reorganization</option>
+                        <option value="ecm-template">Template Generation</option>
+                    </select>
+                    <small>Choose a specialized prompt for your research needs</small>
+                </div>
+                <button class="save-btn" id="saveSettings">Save Settings</button>
+            </div>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>Hello! I'm your <strong>EOP/ECM Education Agent</strong>, specialized in helping researchers implement transparent, reproducible research software practices. I can analyze your code, provide ECM-compliant templates, and guide you through Evidence Chain Model principles. I also remember our conversations for better continuity. How can I assist with your research today?</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+
+            <!-- File Upload Area -->
+            <div class="file-upload-container" id="fileUploadContainer">
+                <div class="file-upload-area" id="fileUploadArea">
+                    <div class="upload-content">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drop files here or click to upload</p>
+                        <small>Supports: PDF, TXT, MD, Images (JPG, PNG), Code files, ZIP archives</small>
+                    </div>
+                    <input type="file" id="fileInput" multiple accept=".pdf,.txt,.md,.py,.js,.html,.css,.json,.yml,.yaml,.csv,.zip,.jpg,.jpeg,.png,.gif,.bmp">
+                </div>
+                <div class="uploaded-files" id="uploadedFiles"></div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <button id="attachBtn" class="attach-btn" title="Attach files">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <textarea 
+                        id="messageInput" 
+                        placeholder="Type your message here..." 
+                        rows="1"
+                    ></textarea>
+                    <button id="sendBtn" class="send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="input-actions">
+                    <button id="clearBtn" class="action-btn">
+                        <i class="fas fa-trash"></i> Clear Chat
+                    </button>
+                    <div class="status-indicator" id="statusIndicator">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Ready</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

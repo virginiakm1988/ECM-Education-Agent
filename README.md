@@ -1,278 +1,171 @@
-# EOP/ECM Education Agent
+# AI Chatbot - Multi-LLM Support
 
-An AI-powered educational agent for the Evidence Chain Model (ECM) in research software transparency, built with NVIDIA NIM integration.
-
-## Overview
-
-The EOP/ECM Education Agent helps researchers understand and implement the Evidence Chain Model (ECM) for transparent, reproducible research software. The agent provides personalized guidance, analyzes repositories for ECM compliance, and assists in reorganizing research code according to ECM principles.
+A modern, responsive chatbot web application that supports multiple Large Language Model (LLM) providers including Google Gemini, OpenAI GPT, Anthropic Claude, and local Ollama models.
 
 ## Features
 
-### 🎯 Core Functionalities
+- 🤖 **Multi-LLM Support**: Works with Gemini, OpenAI, Anthropic, and Ollama
+- 🎨 **Modern UI**: Beautiful, responsive design with smooth animations
+- ⚙️ **Configurable Settings**: Easy-to-use settings panel for API keys and model selection
+- 💬 **Real-time Chat**: Instant messaging with typing indicators
+- 📱 **Mobile Friendly**: Fully responsive design that works on all devices
+- 🔒 **Privacy First**: API keys stored locally, never sent to external servers
+- 🎛️ **Temperature Control**: Adjustable creativity/randomness for AI responses
 
-1. **ECM Significance Explanation**
-   - Tailored explanations based on research field
-   - Context-aware analogies and examples
-   - Interactive engagement to foster consensus
+## Supported LLM Providers
 
-2. **ECM-Guided Development**
-   - Real-time development suggestions
-   - Evidence-oriented prompting
-   - Template and code snippet generation
+### Google Gemini
+- Gemini Pro
+- Gemini Pro Vision
 
-3. **Repository ECM-ization**
-   - Automated compliance analysis
-   - Evidence chain mapping
-   - Gap identification and recommendations
+### OpenAI
+- GPT-4
+- GPT-4 Turbo
+- GPT-3.5 Turbo
 
-4. **Script Reorganization**
-   - Dependency analysis and inference
-   - Logical execution order reconstruction
-   - ECM-compliant structure suggestions
+### Anthropic Claude
+- Claude 3 Opus
+- Claude 3 Sonnet
+- Claude 3 Haiku
 
-5. **Template Generation**
-   - Field-specific project templates
-   - ECM-compliant directory structures
-   - Documentation and configuration templates
+### NVIDIA NIM (Inference Microservices)
+- Llama 3 70B Instruct
+- Llama 3 8B Instruct
+- Phi-3 Medium 128K
+- Phi-3 Mini 128K
+- Mixtral 8x7B Instruct
+- Mistral 7B Instruct
+- Gemma 7B
+- CodeGemma 7B
 
-### 🚀 Technical Features
+### Ollama (Local)
+- Llama 2
+- Code Llama
+- Mistral
+- Any other Ollama-supported model
 
-- **NVIDIA NIM Integration**: Leverages state-of-the-art language models
-- **Multi-Model Support**: Different models for different tasks (reasoning, code analysis, education)
-- **Vector Knowledge Base**: Semantic search over ECM knowledge
-- **Interactive Web Interface**: Streamlit-based user interface
-- **Conversation Memory**: Maintains context across interactions
-
-## Installation
+## Getting Started
 
 ### Prerequisites
 
-- Python 3.8+
-- NVIDIA API Key (for NIM access)
-- OpenAI API Key (for embeddings)
+1. **For cloud providers**: You'll need API keys from your chosen provider(s):
+   - **Gemini**: Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - **OpenAI**: Get your API key from [OpenAI Platform](https://platform.openai.com/api-keys)
+   - **Anthropic**: Get your API key from [Anthropic Console](https://console.anthropic.com/)
+   - **NVIDIA NIM**: Get your API key from [NVIDIA NGC](https://catalog.ngc.nvidia.com/) and set up your NIM endpoint
 
-### Setup
+2. **For Ollama**: Install [Ollama](https://ollama.ai/) locally and pull your desired models:
+   ```bash
+   ollama pull llama2
+   ollama pull codellama
+   ollama pull mistral
+   ```
 
-1. **Clone the repository:**
-```bash
-git clone <repository-url>
-cd ecm-agent
-```
+### Installation
 
-2. **Install dependencies:**
-```bash
-pip install -r requirements.txt
-```
-
-3. **Set up environment variables:**
-```bash
-# Create .env file
-echo "NVIDIA_API_KEY=your_nvidia_api_key" >> .env
-echo "OPENAI_API_KEY=your_openai_api_key" >> .env
-```
-
-4. **Run the application:**
-```bash
-streamlit run streamlit_app.py
-```
+1. **Clone or download** this repository to your local machine
+2. **Open `index.html`** in your web browser
+3. **Click the settings gear** icon in the top right
+4. **Configure your settings**:
+   - Select your preferred LLM provider
+   - Enter your API key (if using cloud providers)
+   - Choose your model
+   - Adjust temperature (creativity level)
+5. **Save settings** and start chatting!
 
 ## Usage
 
-### Web Interface
+1. **Open the application** in your web browser
+2. **Configure settings** by clicking the gear icon
+3. **Type your message** in the input field at the bottom
+4. **Press Enter** or click the send button
+5. **Wait for the AI response** (typing indicator will show)
 
-1. **Start the Streamlit app:**
-```bash
-streamlit run streamlit_app.py
-```
+### Settings Panel
 
-2. **Configure API keys** in the sidebar
+- **LLM Provider**: Choose between Gemini, OpenAI, Anthropic, NVIDIA NIM, or Ollama
+- **API Key**: Enter your API key (stored locally for security)
+- **NIM Endpoint**: Enter your NVIDIA NIM endpoint URL (only for NIM provider)
+- **Model**: Select the specific model you want to use
+- **Temperature**: Control creativity (0.0 = focused, 1.0 = creative)
 
-3. **Initialize the agent** by clicking "Initialize Agent"
+### Features
 
-4. **Use the different tabs** for various functionalities:
-   - **ECM Explanation**: Get tailored explanations
-   - **Development Guide**: Receive development suggestions
-   - **Repository Analysis**: Analyze existing repositories
-   - **Script Reorganization**: Reorganize fragmented scripts
-   - **Templates**: Generate project templates
-   - **Chat**: General conversation interface
+- **Clear Chat**: Remove all messages and start fresh
+- **Auto-resize Input**: Text area expands as you type longer messages
+- **Status Indicator**: Shows connection status and current activity
+- **Responsive Design**: Works perfectly on desktop, tablet, and mobile
 
-### Python API
+## Security & Privacy
 
-```python
-from ecm_education_agent import ECMEducationAgent
-
-# Initialize agent
-agent = ECMEducationAgent()
-
-# Explain ECM significance
-result = agent.explain_ecm_significance(
-    user_background="molecular biology",
-    specific_question="How does ECM help with reproducibility?"
-)
-print(result["explanation"])
-
-# Analyze repository
-analysis = agent.ecmize_repository("/path/to/repository")
-print(analysis["analysis"])
-
-# Get development suggestions
-suggestions = agent.ecm_guided_development(
-    current_state={"scripts": ["analysis.py"], "data_files": ["data.csv"]},
-    user_description="Machine learning project for image classification"
-)
-print(suggestions["suggestions"])
-```
-
-## Configuration
-
-### NVIDIA NIM Models
-
-The agent supports multiple NVIDIA NIM models optimized for different tasks:
-
-- **Reasoning**: `qwen/qwen3-next-80b-a3b-thinking`
-- **Code Analysis**: `meta/codellama-34b-instruct`
-- **General**: `meta/llama-3.1-70b-instruct`
-- **Education**: `nvidia/nemotron-4-340b-instruct`
-
-### Model Parameters
-
-```python
-MODEL_PARAMS = {
-    "temperature": 0.6,
-    "top_p": 0.7,
-    "max_tokens": 4096,
-    "stream": True
-}
-```
-
-## Example Prompts
-
-### ECM Significance Explanation
-```
-"Explain the Evidence Chain Model to a molecular biologist, focusing on its relevance to experimental reproducibility."
-```
-
-### Development Guidance
-```
-"I've uploaded my analysis script and results.csv. What else do I need to include for transparency according to the ECM?"
-```
-
-### Repository Analysis
-```
-"Evaluate the evidentiary completeness of my software repository. What are its strengths and weaknesses regarding the ECM?"
-```
-
-### Script Reorganization
-```
-"I have a collection of scattered R scripts and a description of my experimental pipeline. Can you help me reorganize them into an ECM-oriented code repository?"
-```
-
-## Architecture
-
-### Core Components
-
-1. **ECMEducationAgent**: Main agent class with NVIDIA NIM integration
-2. **Knowledge Base**: Vector database with ECM knowledge
-3. **NVIDIA NIM Client**: Interface to NVIDIA's language models
-4. **Streamlit Interface**: Web-based user interface
-5. **Repository Analyzer**: Code analysis and structure detection
-
-### Data Flow
-
-```
-User Input → Agent → NVIDIA NIM → Knowledge Retrieval → Response Generation → User Interface
-```
-
-## Development
-
-### Adding New Functionality
-
-1. **Extend the agent class:**
-```python
-def new_functionality(self, params):
-    # Implementation
-    pass
-```
-
-2. **Add to web interface:**
-```python
-def new_interface():
-    # Streamlit interface code
-    pass
-```
-
-3. **Update configuration:**
-```python
-# Add new prompts or models
-NEW_PROMPTS = {...}
-```
-
-### Testing
-
-```bash
-# Run the example usage
-python ecm_education_agent.py
-
-# Test specific functionality
-python -c "from ecm_education_agent import ECMEducationAgent; agent = ECMEducationAgent(); print(agent.get_agent_stats())"
-```
+- ✅ **API keys stored locally** in your browser's localStorage
+- ✅ **No data sent to our servers** - direct communication with LLM providers
+- ✅ **Open source** - you can inspect all code
+- ✅ **No tracking or analytics**
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **API Key Issues**
-   - Ensure NVIDIA_API_KEY is set correctly
-   - Check API key permissions and quotas
+1. **"Please set your API key in settings"**
+   - Make sure you've entered a valid API key in the settings panel
+   - Verify the API key is correct for your chosen provider
 
-2. **Model Access**
-   - Verify access to NVIDIA NIM models
-   - Check model availability in your region
+2. **"Please set your NIM endpoint in settings"**
+   - Enter your NVIDIA NIM endpoint URL (e.g., `https://your-nim-endpoint.com/v1`)
+   - Make sure the endpoint is accessible and properly configured
 
-3. **Memory Issues**
-   - Large repositories may require more memory
-   - Consider processing in chunks for large codebases
+3. **"Error occurred"**
+   - Check your internet connection
+   - Verify your API key is valid and has sufficient credits
+   - Make sure you've selected a supported model
+   - For NIM: Verify your endpoint URL is correct and accessible
 
-### Error Messages
+4. **Ollama not working**
+   - Ensure Ollama is installed and running locally
+   - Make sure the model you selected is pulled: `ollama pull <model-name>`
+   - Verify Ollama is running on the default port (11434)
 
-- `"Error calling NVIDIA NIM"`: Check API key and network connection
-- `"Repository path does not exist"`: Verify the path is correct
-- `"Agent not initialized"`: Click "Initialize Agent" in the web interface
+5. **CORS errors with Ollama**
+   - Start Ollama with CORS enabled: `OLLAMA_ORIGINS=* ollama serve`
+
+6. **NVIDIA NIM connection issues**
+   - Verify your NIM endpoint is running and accessible
+   - Check that your API key has proper permissions
+   - Ensure the model you selected is available on your NIM instance
+
+### API Rate Limits
+
+Different providers have different rate limits:
+- **Gemini**: Free tier has generous limits
+- **OpenAI**: Depends on your plan and usage
+- **Anthropic**: Varies by subscription tier
+- **NVIDIA NIM**: Depends on your NGC subscription and endpoint configuration
+- **Ollama**: No limits (runs locally)
+
+## Customization
+
+The application is built with vanilla HTML, CSS, and JavaScript, making it easy to customize:
+
+- **Styling**: Modify `styles.css` to change colors, fonts, and layout
+- **Functionality**: Edit `script.js` to add new features or providers
+- **UI Elements**: Update `index.html` to modify the interface
+
+## Browser Compatibility
+
+- ✅ Chrome 80+
+- ✅ Firefox 75+
+- ✅ Safari 13+
+- ✅ Edge 80+
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+Feel free to submit issues, feature requests, or pull requests to improve this chatbot!
 
 ## License
 
-[Add your license information here]
+This project is open source and available under the MIT License.
 
-## Citation
+---
 
-If you use this agent in your research, please cite:
-
-```bibtex
-@software{ecm_education_agent,
-  title={EOP/ECM Education Agent},
-  author={[Your Name]},
-  year={2024},
-  url={[Repository URL]}
-}
-```
-
-## Support
-
-For questions and support:
-- Create an issue in the repository
-- Contact: [your-email@domain.com]
-
-## Acknowledgments
-
-- NVIDIA for NIM platform access
-- OpenAI for embedding models
-- Streamlit for the web interface framework
+**Enjoy chatting with your AI assistant!** 🤖✨

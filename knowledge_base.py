@@ -1,553 +1,399 @@
 """
-Emergency Response Knowledge Base Management
+Knowledge Base for EOP/ECM Education Agent
+Contains embedded documents and guidelines that are automatically loaded
 """
-import json
+
 import os
-from typing import List, Dict, Any, Optional
-from datetime import datetime
-import logging
+import json
+from typing import Dict, List, Any
 
-from langchain.schema import Document
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-import PyPDF2
-from docx import Document as DocxDocument
-
-logger = logging.getLogger(__name__)
-
-class EmergencyKnowledgeBase:
-    """
-    Manages the emergency response knowledge base with comprehensive emergency management content
-    """
-    
+class KnowledgeBase:
     def __init__(self):
-        self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000,
-            chunk_overlap=200
-        )
-        
-    def get_comprehensive_emergency_knowledge(self) -> List[Document]:
-        """
-        Returns comprehensive emergency management knowledge base
-        """
-        knowledge_items = [
-            # Natural Disasters
-            {
-                "content": """
-                EARTHQUAKE RESPONSE PROCEDURES:
-                
-                IMMEDIATE ACTIONS (First 2 minutes):
-                1. DROP to hands and knees
-                2. TAKE COVER under a sturdy desk or table
-                3. HOLD ON to your shelter and protect your head/neck
-                4. Stay away from windows, mirrors, and heavy objects
-                5. If outdoors, move away from buildings, trees, and power lines
-                
-                AFTER SHAKING STOPS:
-                1. Check for injuries and provide first aid
-                2. Check for hazards (gas leaks, electrical damage, structural damage)
-                3. Turn off utilities if damage is suspected
-                4. Evacuate if building is damaged
-                5. Stay out of damaged buildings
-                6. Listen to emergency broadcasts
-                7. Be prepared for aftershocks
-                
-                COMMUNICATION:
-                - Use text messages instead of phone calls
-                - Monitor emergency radio frequencies
-                - Check in with family/colleagues when safe
-                """,
-                "category": "Natural Disasters",
-                "subcategory": "Earthquake"
-            },
-            {
-                "content": """
-                FIRE EMERGENCY PROCEDURES:
-                
-                DISCOVERY OF FIRE:
-                1. Sound the alarm immediately
-                2. Call 911 or emergency services
-                3. Attempt to extinguish ONLY if fire is small and you have proper equipment
-                4. If fire cannot be controlled, evacuate immediately
-                
-                EVACUATION PROCEDURES:
-                1. Use nearest safe exit
-                2. Feel doors before opening (if hot, use alternate route)
-                3. Stay low if smoke is present
-                4. Close doors behind you to slow fire spread
-                5. Use stairs, never elevators
-                6. Proceed to designated assembly area
-                7. Report to floor wardens/emergency coordinators
-                
-                FIRE EXTINGUISHER USE (PASS Method):
-                P - Pull the pin
-                A - Aim at base of fire
-                S - Squeeze the handle
-                S - Sweep from side to side
-                
-                NEVER fight fire if:
-                - Fire is larger than you
-                - Smoke is filling the room
-                - Fire is spreading rapidly
-                - Your exit route is threatened
-                """,
-                "category": "Natural Disasters",
-                "subcategory": "Fire"
-            },
-            {
-                "content": """
-                SEVERE WEATHER RESPONSE:
-                
-                TORNADO WARNING:
-                1. Move to lowest floor of building
-                2. Go to interior room away from windows
-                3. Avoid large roof spans (cafeterias, gyms, auditoriums)
-                4. Get under sturdy furniture if possible
-                5. Protect head and neck with arms
-                6. Stay away from windows and glass
-                7. Monitor weather radio for updates
-                
-                SEVERE THUNDERSTORM:
-                1. Move indoors immediately
-                2. Stay away from windows
-                3. Avoid electrical equipment and plumbing
-                4. Do not use landline phones
-                5. Wait 30 minutes after last thunder before going outside
-                
-                FLOODING:
-                1. Move to higher ground immediately
-                2. Avoid walking/driving through flood water
-                3. Turn off utilities if instructed
-                4. Do not touch electrical equipment if wet
-                5. Listen for evacuation orders
-                """,
-                "category": "Natural Disasters",
-                "subcategory": "Severe Weather"
-            },
-            
-            # Medical Emergencies
-            {
-                "content": """
-                MEDICAL EMERGENCY RESPONSE:
-                
-                INITIAL ASSESSMENT:
-                1. Ensure scene safety
-                2. Check responsiveness
-                3. Call 911 immediately if serious
-                4. Check airway, breathing, circulation (ABC)
-                5. Control bleeding if present
-                6. Treat for shock
-                7. Do not move victim unless in immediate danger
-                
-                CARDIAC ARREST/CPR:
-                1. Check for responsiveness and breathing
-                2. Call 911 and request AED
-                3. Begin chest compressions:
-                   - Place heel of hand on center of chest
-                   - Push hard and fast at least 2 inches deep
-                   - Rate of 100-120 compressions per minute
-                   - Allow complete chest recoil
-                4. Provide rescue breaths if trained
-                5. Continue until EMS arrives or AED becomes available
-                
-                CHOKING (Conscious Adult):
-                1. Ask "Are you choking?"
-                2. Give 5 back blows between shoulder blades
-                3. Give 5 abdominal thrusts (Heimlich maneuver)
-                4. Continue alternating until object is expelled or person becomes unconscious
-                5. If unconscious, begin CPR
-                
-                SEVERE BLEEDING:
-                1. Apply direct pressure with clean cloth
-                2. Elevate injured area above heart if possible
-                3. Apply pressure to pressure points if bleeding continues
-                4. Do not remove objects impaled in wounds
-                5. Treat for shock
-                """,
-                "category": "Medical Emergencies",
-                "subcategory": "Life-Threatening"
-            },
-            
-            # Security Incidents
-            {
-                "content": """
-                ACTIVE SHOOTER RESPONSE (RUN-HIDE-FIGHT):
-                
-                RUN:
-                1. Have an escape route and plan in mind
-                2. Leave belongings behind
-                3. Help others escape if possible
-                4. Keep hands visible when evacuating
-                5. Follow instructions of police officers
-                6. Do not attempt to move wounded people
-                7. Call 911 when safe
-                
-                HIDE:
-                1. Hide in area out of shooter's view
-                2. Block entry to hiding place and lock doors
-                3. Silence cell phones and remain quiet
-                4. Turn off lights and close blinds
-                5. Barricade doors with heavy furniture
-                6. Spread out if in group
-                7. Remain calm and wait for law enforcement
-                
-                FIGHT (Last Resort):
-                1. Act as a team if possible
-                2. Improvise weapons
-                3. Be aggressive and committed
-                4. Throw items at shooter
-                5. Yell loudly
-                6. Attack shooter's ability to see and breathe
-                
-                WHEN LAW ENFORCEMENT ARRIVES:
-                1. Keep hands visible and empty
-                2. Follow all commands immediately
-                3. Avoid quick movements
-                4. Do not point or yell
-                5. Know that first officers may not help injured
-                """,
-                "category": "Security Incidents",
-                "subcategory": "Active Threat"
-            },
-            
-            # Infrastructure Failures
-            {
-                "content": """
-                POWER OUTAGE RESPONSE:
-                
-                IMMEDIATE ACTIONS:
-                1. Check if outage is localized or widespread
-                2. Turn off electrical equipment to prevent damage from power surges
-                3. Keep refrigerators and freezers closed
-                4. Use flashlights, not candles
-                5. Listen to battery-powered radio for updates
-                6. Check on neighbors, especially elderly
-                
-                EXTENDED OUTAGE PROCEDURES:
-                1. Conserve phone battery
-                2. Use generators outdoors only
-                3. Avoid opening refrigerator/freezer
-                4. Dress warmly if heating is affected
-                5. Stay hydrated
-                6. Monitor for signs of carbon monoxide poisoning
-                
-                ELEVATOR ENTRAPMENT:
-                1. Press alarm button or call button
-                2. Use emergency phone if available
-                3. Call 911 from cell phone
-                4. Do not attempt to force doors open
-                5. Do not try to climb out
-                6. Remain calm and wait for help
-                7. If power fails, emergency lighting should activate
-                
-                HVAC SYSTEM FAILURE:
-                1. Report to facilities management
-                2. Open windows if safe and weather permits
-                3. Move to areas with better ventilation
-                4. Stay hydrated
-                5. Monitor for heat-related illness
-                6. Consider early dismissal if conditions worsen
-                """,
-                "category": "Infrastructure Failures",
-                "subcategory": "Utilities"
-            },
-            
-            # Communication Systems
-            {
-                "content": """
-                CRISIS COMMUNICATION TEMPLATES:
-                
-                INITIAL ALERT TEMPLATE:
-                "EMERGENCY ALERT: [Type of emergency] occurring at [Location] at [Time]. 
-                [Immediate action required]. Emergency services have been notified. 
-                Updates will follow every [frequency]. For information: [Contact]."
-                
-                UPDATE TEMPLATE:
-                "EMERGENCY UPDATE [#]: [Current status of situation]. 
-                [Actions taken]. [Current instructions for personnel]. 
-                [Expected next update time]. [Contact for questions]."
-                
-                ALL-CLEAR TEMPLATE:
-                "ALL-CLEAR: The emergency situation at [Location] has been resolved as of [Time]. 
-                [Brief summary of resolution]. Normal operations [will resume/have resumed] at [Time]. 
-                [Any follow-up actions required]. Thank you for your cooperation."
-                
-                MEDIA STATEMENT TEMPLATE:
-                "At approximately [Time] on [Date], [Organization] experienced [Type of incident] 
-                at [Location]. [Brief factual description]. [Actions taken]. 
-                [Current status]. [Cooperation with authorities]. 
-                [Contact information for media inquiries]."
-                
-                FAMILY NOTIFICATION TEMPLATE:
-                "This message is to inform you that [Organization] has experienced [Type of emergency]. 
-                All personnel have been [accounted for/evacuated safely]. 
-                [Any injuries or impacts]. [Current status]. 
-                [When normal operations will resume]. [Contact for family questions]."
-                """,
-                "category": "Crisis Communication",
-                "subcategory": "Templates"
-            },
-            
-            # Business Continuity
-            {
-                "content": """
-                BUSINESS CONTINUITY ACTIVATION:
-                
-                DECISION CRITERIA:
-                1. Threat to life safety
-                2. Significant property damage
-                3. Loss of critical systems for >4 hours
-                4. Inability to access primary facility
-                5. Loss of key personnel
-                6. Regulatory/legal requirements
-                7. Significant financial impact
-                
-                ACTIVATION PROCESS:
-                1. Assess situation severity
-                2. Notify Business Continuity Team
-                3. Activate alternate facilities if needed
-                4. Implement communication plan
-                5. Deploy recovery teams
-                6. Monitor and adjust response
-                7. Document all actions
-                
-                CRITICAL FUNCTIONS PRIORITY:
-                1. Life safety and security
-                2. Emergency communications
-                3. Critical business processes
-                4. IT systems and data recovery
-                5. Customer service continuity
-                6. Financial operations
-                7. Regulatory compliance
-                8. Supply chain management
-                
-                RECOVERY PHASES:
-                Phase 1 (0-24 hours): Life safety, damage assessment, emergency communications
-                Phase 2 (1-7 days): Critical function restoration, alternate site activation
-                Phase 3 (1-4 weeks): Full operations restoration, lessons learned
-                Phase 4 (1+ months): Return to normal operations, plan updates
-                """,
-                "category": "Business Continuity",
-                "subcategory": "Activation"
-            },
-            
-            # Incident Command System
-            {
-                "content": """
-                INCIDENT COMMAND SYSTEM (ICS) ROLES:
-                
-                INCIDENT COMMANDER (IC):
-                - Overall responsibility for incident management
-                - Establishes incident objectives and strategy
-                - Approves resource requests
-                - Authorizes information release
-                - Ensures safety of all personnel
-                
-                OPERATIONS SECTION CHIEF:
-                - Manages tactical operations
-                - Develops tactical assignments
-                - Coordinates with other agencies
-                - Manages resources assigned to operations
-                
-                PLANNING SECTION CHIEF:
-                - Collects and evaluates information
-                - Prepares Incident Action Plan
-                - Maintains resource status
-                - Prepares incident documentation
-                
-                LOGISTICS SECTION CHIEF:
-                - Provides support and resources
-                - Manages communications
-                - Coordinates medical support
-                - Handles procurement and cost analysis
-                
-                FINANCE/ADMINISTRATION SECTION CHIEF:
-                - Tracks incident costs
-                - Handles procurement contracts
-                - Manages personnel time records
-                - Processes claims and compensation
-                
-                SAFETY OFFICER:
-                - Monitors safety conditions
-                - Develops safety measures
-                - Has authority to stop unsafe acts
-                - Investigates accidents
-                
-                PUBLIC INFORMATION OFFICER:
-                - Manages media relations
-                - Coordinates information release
-                - Handles public inquiries
-                - Manages social media communications
-                """,
-                "category": "Incident Management",
-                "subcategory": "ICS Structure"
-            }
-        ]
-        
-        documents = []
-        for item in knowledge_items:
-            # Split long content into chunks
-            chunks = self.text_splitter.split_text(item["content"])
-            
-            for i, chunk in enumerate(chunks):
-                doc = Document(
-                    page_content=chunk,
-                    metadata={
-                        "category": item["category"],
-                        "subcategory": item["subcategory"],
-                        "source": "comprehensive_knowledge_base",
-                        "chunk_id": f"{item['subcategory']}_{i}",
-                        "timestamp": datetime.now().isoformat()
-                    }
-                )
-                documents.append(doc)
-        
-        return documents
+        self.documents = {}
+        self.initialize_documents()
     
-    def process_pdf_document(self, file_path: str, category: str = "Custom") -> List[Document]:
-        """
-        Process PDF document and extract text for knowledge base
-        """
-        try:
-            documents = []
-            
-            with open(file_path, 'rb') as file:
-                pdf_reader = PyPDF2.PdfReader(file)
-                
-                full_text = ""
-                for page_num, page in enumerate(pdf_reader.pages):
-                    text = page.extract_text()
-                    full_text += f"\n--- Page {page_num + 1} ---\n{text}"
-                
-                # Split text into chunks
-                chunks = self.text_splitter.split_text(full_text)
-                
-                for i, chunk in enumerate(chunks):
-                    doc = Document(
-                        page_content=chunk,
-                        metadata={
-                            "category": category,
-                            "source": os.path.basename(file_path),
-                            "file_type": "pdf",
-                            "chunk_id": f"pdf_{i}",
-                            "timestamp": datetime.now().isoformat()
-                        }
-                    )
-                    documents.append(doc)
-            
-            logger.info(f"Processed PDF: {file_path}, created {len(documents)} chunks")
-            return documents
-            
-        except Exception as e:
-            logger.error(f"Error processing PDF {file_path}: {e}")
-            return []
-    
-    def process_docx_document(self, file_path: str, category: str = "Custom") -> List[Document]:
-        """
-        Process Word document and extract text for knowledge base
-        """
-        try:
-            documents = []
-            
-            doc = DocxDocument(file_path)
-            
-            full_text = ""
-            for paragraph in doc.paragraphs:
-                full_text += paragraph.text + "\n"
-            
-            # Also extract text from tables
-            for table in doc.tables:
-                for row in table.rows:
-                    for cell in row.cells:
-                        full_text += cell.text + " "
-                    full_text += "\n"
-            
-            # Split text into chunks
-            chunks = self.text_splitter.split_text(full_text)
-            
-            for i, chunk in enumerate(chunks):
-                doc = Document(
-                    page_content=chunk,
-                    metadata={
-                        "category": category,
-                        "source": os.path.basename(file_path),
-                        "file_type": "docx",
-                        "chunk_id": f"docx_{i}",
-                        "timestamp": datetime.now().isoformat()
-                    }
-                )
-                documents.append(doc)
-            
-            logger.info(f"Processed DOCX: {file_path}, created {len(documents)} chunks")
-            return documents
-            
-        except Exception as e:
-            logger.error(f"Error processing DOCX {file_path}: {e}")
-            return []
-    
-    def create_custom_knowledge(self, content: str, category: str, subcategory: str = "") -> List[Document]:
-        """
-        Create knowledge documents from custom content
-        """
-        chunks = self.text_splitter.split_text(content)
-        documents = []
+    def initialize_documents(self):
+        """Initialize the knowledge base with embedded documents"""
         
-        for i, chunk in enumerate(chunks):
-            doc = Document(
-                page_content=chunk,
-                metadata={
-                    "category": category,
-                    "subcategory": subcategory,
-                    "source": "custom_input",
-                    "chunk_id": f"custom_{i}",
-                    "timestamp": datetime.now().isoformat()
-                }
-            )
-            documents.append(doc)
+        # EOP Draft Paper Content (extracted key sections)
+        eop_content = """
+# Emergency Operations Plan (EOP) for Research Software - Draft v1
+
+## Executive Summary
+
+The Evidence Chain Model (ECM) provides a comprehensive framework for maintaining computational transparency and reproducibility in research software, with special emphasis on crisis preparedness and emergency operations planning.
+
+## 1. Introduction
+
+Research software forms the backbone of modern scientific inquiry, yet it remains vulnerable to various disruptions including system failures, personnel changes, natural disasters, and institutional crises. The Emergency Operations Plan (EOP) for research software establishes protocols and procedures to ensure continuity of computational research during adverse conditions.
+
+## 2. Core Principles of ECM
+
+### 2.1 Computational Transparency
+All computational steps must be documented and reproducible. This includes:
+- Complete source code availability
+- Clear documentation of algorithms and methodologies
+- Explicit statement of assumptions and limitations
+- Version control of all computational components
+
+### 2.2 Evidence Completeness
+Every scientific claim must be supported by verifiable computational evidence:
+- Raw data preservation and accessibility
+- Complete computational workflows
+- Intermediate results and checkpoints
+- Statistical analyses and visualizations
+
+### 2.3 Logical Traceability
+Clear relationships between inputs, processes, and outputs:
+- Dependency mapping of all computational components
+- Data flow documentation
+- Process sequencing and timing
+- Error handling and validation procedures
+
+### 2.4 Environmental Documentation
+Complete recording of computational environment:
+- Operating system specifications
+- Software versions and dependencies
+- Hardware configurations
+- Runtime parameters and settings
+
+### 2.5 Provenance Tracking
+Full history of data transformations and analysis steps:
+- Data lineage documentation
+- Transformation logs
+- Analysis decision points
+- Quality control measures
+
+## 3. Crisis Management Framework
+
+### 3.1 Risk Assessment
+Research teams must identify potential vulnerabilities:
+- Single points of failure in computational workflows
+- Personnel dependencies and knowledge silos
+- Infrastructure vulnerabilities
+- Data loss scenarios
+
+### 3.2 Preparedness Measures
+Proactive steps to ensure research continuity:
+- Distributed backup systems
+- Documentation standardization
+- Cross-training of team members
+- Emergency contact protocols
+
+### 3.3 Response Procedures
+Immediate actions during crisis situations:
+- Damage assessment protocols
+- Communication procedures
+- Resource reallocation strategies
+- Temporary workflow modifications
+
+### 3.4 Recovery Operations
+Steps to restore full research capabilities:
+- System restoration procedures
+- Data recovery protocols
+- Workflow validation processes
+- Performance monitoring
+
+## 4. Implementation Guidelines
+
+### 4.1 Version Control Systems
+Mandatory use of distributed version control:
+- Git repositories for all code
+- Branching strategies for collaborative development
+- Tag-based release management
+- Automated backup procedures
+
+### 4.2 Dependency Management
+Systematic tracking of software dependencies:
+- Package managers (pip, conda, npm)
+- Virtual environments
+- Dependency lock files
+- Regular security updates
+
+### 4.3 Containerization
+Isolation and portability of computational environments:
+- Docker containers for reproducibility
+- Singularity for HPC environments
+- Container registries for distribution
+- Automated container builds
+
+### 4.4 Documentation Systems
+Comprehensive documentation frameworks:
+- README files with clear instructions
+- API documentation
+- User guides and tutorials
+- Troubleshooting guides
+
+### 4.5 Testing and Validation
+Systematic verification of computational correctness:
+- Unit tests for individual components
+- Integration tests for workflows
+- Regression tests for stability
+- Performance benchmarks
+
+### 4.6 Continuous Integration/Deployment
+Automated quality assurance:
+- Automated testing pipelines
+- Code quality checks
+- Security vulnerability scanning
+- Deployment automation
+
+## 5. Data Management and FAIR Principles
+
+### 5.1 Findability
+Data and software must be easily discoverable:
+- Persistent identifiers (DOIs, ORCIDs)
+- Rich metadata descriptions
+- Searchable repositories
+- Clear naming conventions
+
+### 5.2 Accessibility
+Open and standardized access protocols:
+- Standard data formats
+- Open source licensing
+- API-based access
+- Authentication systems
+
+### 5.3 Interoperability
+Compatibility across systems and platforms:
+- Standard data formats
+- Common vocabularies
+- Protocol standardization
+- Cross-platform compatibility
+
+### 5.4 Reusability
+Clear licensing and documentation for reuse:
+- Open source licenses
+- Usage documentation
+- Example implementations
+- Community support
+
+## 6. Team Organization and Communication
+
+### 6.1 Roles and Responsibilities
+Clear definition of team member roles:
+- Principal Investigator oversight
+- Data steward responsibilities
+- Software developer duties
+- System administrator tasks
+
+### 6.2 Communication Protocols
+Established channels for team coordination:
+- Regular team meetings
+- Documentation standards
+- Issue tracking systems
+- Emergency contact procedures
+
+### 6.3 Knowledge Management
+Systematic capture and sharing of institutional knowledge:
+- Documentation repositories
+- Training materials
+- Best practice guides
+- Lessons learned databases
+
+## 7. Compliance and Quality Assurance
+
+### 7.1 Regulatory Compliance
+Adherence to relevant standards and regulations:
+- Data protection regulations
+- Institutional policies
+- Funding agency requirements
+- Publication standards
+
+### 7.2 Quality Metrics
+Measurable indicators of ECM compliance:
+- Documentation completeness scores
+- Test coverage percentages
+- Reproducibility success rates
+- Response time metrics
+
+### 7.3 Audit Procedures
+Regular assessment of ECM implementation:
+- Self-assessment checklists
+- Peer review processes
+- External audits
+- Continuous improvement cycles
+
+## 8. Technology Stack Recommendations
+
+### 8.1 Core Technologies
+Essential tools for ECM implementation:
+- Git for version control
+- Docker for containerization
+- Jupyter for interactive analysis
+- GitHub/GitLab for collaboration
+
+### 8.2 Language-Specific Tools
+Recommendations by programming language:
+- Python: pip, conda, pytest, sphinx
+- R: packrat, testthat, roxygen2
+- JavaScript: npm, jest, jsdoc
+- Java: Maven, JUnit, Javadoc
+
+### 8.3 Infrastructure Components
+Supporting infrastructure for ECM:
+- Cloud storage solutions
+- Continuous integration platforms
+- Container registries
+- Monitoring systems
+
+## 9. Training and Education
+
+### 9.1 Skill Development
+Essential competencies for team members:
+- Version control proficiency
+- Documentation writing
+- Testing methodologies
+- Containerization concepts
+
+### 9.2 Training Programs
+Structured learning pathways:
+- Onboarding procedures
+- Regular skill updates
+- Cross-training initiatives
+- External workshop participation
+
+## 10. Conclusion
+
+The Emergency Operations Plan for research software provides a comprehensive framework for ensuring computational research continuity during adverse conditions. By implementing ECM principles systematically, research teams can build resilient, transparent, and reproducible computational workflows that withstand various challenges and disruptions.
+
+The key to successful EOP implementation lies in proactive planning, systematic documentation, and regular practice of emergency procedures. Research teams that invest in these preparedness measures will find themselves better equipped to handle crises while maintaining the integrity and continuity of their scientific work.
+        """
         
-        return documents
+        # Store the EOP document
+        self.documents['EOP_draft_v1'] = {
+            'title': 'Emergency Operations Plan (EOP) for Research Software - Draft v1',
+            'content': eop_content,
+            'type': 'guideline',
+            'version': '1.0',
+            'last_updated': '2024-10-28'
+        }
+        
+        # Additional ECM Guidelines
+        ecm_guidelines = """
+# Evidence Chain Model (ECM) Implementation Guidelines
+
+## Quick Start Checklist
+
+### Phase 1: Foundation (Week 1-2)
+- [ ] Set up Git repository
+- [ ] Create README.md with project description
+- [ ] Initialize virtual environment
+- [ ] Create requirements.txt or environment.yml
+- [ ] Set up basic project structure
+
+### Phase 2: Documentation (Week 3-4)
+- [ ] Document all functions and classes
+- [ ] Create user guide
+- [ ] Write installation instructions
+- [ ] Document data sources and formats
+- [ ] Create troubleshooting guide
+
+### Phase 3: Testing (Week 5-6)
+- [ ] Write unit tests for core functions
+- [ ] Set up integration tests
+- [ ] Create test data sets
+- [ ] Implement continuous integration
+- [ ] Add code coverage reporting
+
+### Phase 4: Reproducibility (Week 7-8)
+- [ ] Containerize the application
+- [ ] Create reproducible examples
+- [ ] Test on different systems
+- [ ] Document system requirements
+- [ ] Create deployment guide
+
+## Common Implementation Patterns
+
+### Repository Structure
+```
+project/
+├── README.md
+├── requirements.txt
+├── environment.yml
+├── Dockerfile
+├── src/
+│   ├── __init__.py
+│   ├── data/
+│   ├── models/
+│   └── utils/
+├── tests/
+├── docs/
+├── examples/
+└── data/
+    ├── raw/
+    ├── processed/
+    └── external/
+```
+
+### Documentation Templates
+- README template with all essential sections
+- Function documentation with examples
+- API documentation with usage patterns
+- Troubleshooting guides with common issues
+
+### Testing Strategies
+- Unit tests for individual functions
+- Integration tests for workflows
+- Data validation tests
+- Performance benchmarks
+        """
+        
+        self.documents['ECM_Guidelines'] = {
+            'title': 'Evidence Chain Model Implementation Guidelines',
+            'content': ecm_guidelines,
+            'type': 'guideline',
+            'version': '1.0',
+            'last_updated': '2024-10-28'
+        }
     
-    def get_emergency_contacts_template(self) -> Dict[str, Any]:
-        """
-        Returns template for emergency contacts
-        """
+    def get_document(self, doc_id: str) -> Dict[str, Any]:
+        """Get a specific document by ID"""
+        return self.documents.get(doc_id, {})
+    
+    def get_all_documents(self) -> Dict[str, Any]:
+        """Get all documents in the knowledge base"""
+        return self.documents
+    
+    def search_documents(self, query: str) -> List[Dict[str, Any]]:
+        """Search for documents containing the query"""
+        results = []
+        query_lower = query.lower()
+        
+        for doc_id, doc in self.documents.items():
+            if (query_lower in doc['title'].lower() or 
+                query_lower in doc['content'].lower()):
+                results.append({
+                    'id': doc_id,
+                    'title': doc['title'],
+                    'type': doc['type'],
+                    'relevance': doc['content'].lower().count(query_lower)
+                })
+        
+        # Sort by relevance
+        results.sort(key=lambda x: x['relevance'], reverse=True)
+        return results
+    
+    def get_document_content(self, doc_id: str) -> str:
+        """Get the content of a specific document"""
+        doc = self.documents.get(doc_id, {})
+        return doc.get('content', '')
+    
+    def get_knowledge_base_info(self) -> Dict[str, Any]:
+        """Get information about the knowledge base"""
         return {
-            "internal_contacts": {
-                "emergency_coordinator": {"name": "", "phone": "", "email": "", "role": "Primary Emergency Coordinator"},
-                "backup_coordinator": {"name": "", "phone": "", "email": "", "role": "Backup Emergency Coordinator"},
-                "facilities_manager": {"name": "", "phone": "", "email": "", "role": "Facilities Management"},
-                "it_manager": {"name": "", "phone": "", "email": "", "role": "IT Systems"},
-                "hr_manager": {"name": "", "phone": "", "email": "", "role": "Human Resources"},
-                "security_manager": {"name": "", "phone": "", "email": "", "role": "Security"}
-            },
-            "external_contacts": {
-                "police": {"phone": "911", "non_emergency": "", "contact_person": ""},
-                "fire_department": {"phone": "911", "non_emergency": "", "contact_person": ""},
-                "ems": {"phone": "911", "non_emergency": "", "contact_person": ""},
-                "hospital": {"name": "", "phone": "", "address": ""},
-                "utilities": {
-                    "electric": {"company": "", "emergency_phone": ""},
-                    "gas": {"company": "", "emergency_phone": ""},
-                    "water": {"company": "", "emergency_phone": ""},
-                    "telecom": {"company": "", "emergency_phone": ""}
-                },
-                "emergency_management": {"agency": "", "phone": "", "contact_person": ""}
-            },
-            "media_contacts": {
-                "primary_spokesperson": {"name": "", "phone": "", "email": ""},
-                "backup_spokesperson": {"name": "", "phone": "", "email": ""},
-                "media_relations": {"company": "", "contact": "", "phone": ""}
-            }
+            'total_documents': len(self.documents),
+            'document_types': list(set(doc['type'] for doc in self.documents.values())),
+            'documents': [
+                {
+                    'id': doc_id,
+                    'title': doc['title'],
+                    'type': doc['type'],
+                    'version': doc['version']
+                }
+                for doc_id, doc in self.documents.items()
+            ]
         }
 
-# Example usage
-if __name__ == "__main__":
-    kb = EmergencyKnowledgeBase()
-    
-    # Get comprehensive knowledge
-    docs = kb.get_comprehensive_emergency_knowledge()
-    print(f"Created {len(docs)} knowledge documents")
-    
-    # Get emergency contacts template
-    contacts = kb.get_emergency_contacts_template()
-    print("\nEmergency Contacts Template:")
-    print(json.dumps(contacts, indent=2))
+# Global instance
+knowledge_base = KnowledgeBase()
