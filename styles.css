@@ -308,10 +308,10 @@ body {
     margin-top: 0;
 }
 
-.message-content h1 { font-size: 1.5em; color: #2d3748; }
-.message-content h2 { font-size: 1.3em; color: #2d3748; }
-.message-content h3 { font-size: 1.2em; color: #4a5568; }
-.message-content h4 { font-size: 1.1em; color: #4a5568; }
+.message-content h1 { font-size: 1.5em; color: #2d3748; border-bottom: 2px solid #667eea; padding-bottom: 5px; }
+.message-content h2 { font-size: 1.3em; color: #2d3748; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px; }
+.message-content h3 { font-size: 1.2em; color: #4a5568; margin-top: 20px; }
+.message-content h4 { font-size: 1.1em; color: #4a5568; margin-top: 15px; font-weight: 600; }
 
 .message-content strong {
     font-weight: 600;
@@ -427,6 +427,58 @@ body {
     background: rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.3);
     color: #e2e8f0;
+}
+
+/* ECM Analysis Specific Styling */
+.message-content .ecm-score {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    display: inline-block;
+    font-weight: 600;
+    margin: 5px 0;
+}
+
+.message-content .compliance-status {
+    padding: 5px 10px;
+    border-radius: 15px;
+    display: inline-block;
+    font-weight: 600;
+    margin: 5px 0;
+}
+
+.message-content .compliance-fully {
+    background: #c6f6d5;
+    color: #22543d;
+    border: 1px solid #9ae6b4;
+}
+
+.message-content .compliance-partial {
+    background: #fef5e7;
+    color: #744210;
+    border: 1px solid #f6e05e;
+}
+
+.message-content .compliance-not {
+    background: #fed7d7;
+    color: #742a2a;
+    border: 1px solid #fc8181;
+}
+
+.message-content .priority-high {
+    color: #e53e3e;
+    font-weight: 600;
+}
+
+.message-content .priority-medium {
+    color: #ed8936;
+    font-weight: 600;
+}
+
+.message-content .priority-low {
+    color: #38a169;
+    font-weight: 600;
 }
 
 /* Typing Indicator */
