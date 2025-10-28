@@ -88,10 +88,15 @@ async function callNvidiaNIM(message, apiKey, nimEndpoint, model, temperature) {
         },
         body: JSON.stringify({
             model: model,
-            messages: [{ role: 'user', content: message }],
-            temperature: temperature || 0.7,
-            top_p: 0.7,
+            messages: [
+                { role: 'system', content: 'You are an expert EOP/ECM Education Agent specialized in research software transparency and Evidence Chain Model implementation.' },
+                { role: 'user', content: message }
+            ],
+            temperature: temperature || 0.6,
+            top_p: 0.95,
             max_tokens: 4096,
+            frequency_penalty: 0,
+            presence_penalty: 0,
             stream: false
         })
     });

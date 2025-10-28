@@ -8,7 +8,7 @@ class ChatBot {
         this.initializeElements();
         this.bindEvents();
         this.updateModelOptions();
-        this.toggleNimEndpoint();
+        this.toggleProviderSettings();
         this.initializeRAG();
         // Only load previous conversation if user wants it (can be controlled via settings)
         if (this.settings.loadPreviousConversation !== false) {
@@ -545,7 +545,14 @@ Focus on providing actionable, specific recommendations that researchers can imm
         this.settingsBtn = document.getElementById('settingsBtn');
         this.settingsPanel = document.getElementById('settingsPanel');
         this.llmProvider = document.getElementById('llmProvider');
-        this.apiKey = document.getElementById('apiKey');
+        this.geminiApiKey = document.getElementById('geminiApiKey');
+        this.openaiApiKey = document.getElementById('openaiApiKey');
+        this.anthropicApiKey = document.getElementById('anthropicApiKey');
+        this.nimApiKey = document.getElementById('nimApiKey');
+        this.geminiApiGroup = document.getElementById('geminiApiGroup');
+        this.openaiApiGroup = document.getElementById('openaiApiGroup');
+        this.anthropicApiGroup = document.getElementById('anthropicApiGroup');
+        this.nimApiGroup = document.getElementById('nimApiGroup');
         this.nimEndpoint = document.getElementById('nimEndpoint');
         this.nimEndpointGroup = document.getElementById('nimEndpointGroup');
         this.model = document.getElementById('model');
@@ -575,7 +582,10 @@ Focus on providing actionable, specific recommendations that researchers can imm
         
         // Load saved settings into UI
         this.llmProvider.value = this.settings.provider;
-        this.apiKey.value = this.settings.apiKey;
+        this.geminiApiKey.value = this.settings.geminiApiKey || '';
+        this.openaiApiKey.value = this.settings.openaiApiKey || '';
+        this.anthropicApiKey.value = this.settings.anthropicApiKey || '';
+        this.nimApiKey.value = this.settings.nimApiKey || '';
         this.nimEndpoint.value = this.settings.nimEndpoint || '';
         this.model.value = this.settings.model;
         this.temperature.value = this.settings.temperature;
@@ -633,7 +643,7 @@ Focus on providing actionable, specific recommendations that researchers can imm
         // Settings form
         this.llmProvider.addEventListener('change', () => {
             this.updateModelOptions();
-            this.toggleNimEndpoint();
+            this.toggleProviderSettings();
         });
         this.temperature.addEventListener('input', () => {
             this.temperatureValue.textContent = this.temperature.value;
@@ -644,12 +654,16 @@ Focus on providing actionable, specific recommendations that researchers can imm
     loadSettings() {
         const defaultSettings = {
             provider: 'gemini',
-            apiKey: '',
+            geminiApiKey: '',
+            openaiApiKey: '',
+            anthropicApiKey: '',
+            nimApiKey: '',
             nimEndpoint: '',
             model: 'gemini-2.0-flash-lite',
             temperature: 0.7,
             systemPrompt: 'ecm-main', // Default to ECM Education Agent
-            loadPreviousConversation: false // Default to NOT loading previous conversations on refresh
+            loadPreviousConversation: false, // Default to NOT loading previous conversations on refresh
+            enableWebBrowsing: true
         };
         
         const saved = localStorage.getItem('chatbot-settings');
@@ -659,7 +673,10 @@ Focus on providing actionable, specific recommendations that researchers can imm
     saveSettingsData() {
         this.settings = {
             provider: this.llmProvider.value,
-            apiKey: this.apiKey.value,
+            geminiApiKey: this.geminiApiKey.value,
+            openaiApiKey: this.openaiApiKey.value,
+            anthropicApiKey: this.anthropicApiKey.value,
+            nimApiKey: this.nimApiKey.value,
             nimEndpoint: this.nimEndpoint.value,
             model: this.model.value,
             temperature: parseFloat(this.temperature.value),
@@ -678,12 +695,67 @@ Focus on providing actionable, specific recommendations that researchers can imm
         }, 2000);
     }
 
-    toggleNimEndpoint() {
-        if (this.llmProvider.value === 'nvidia-nim') {
-            this.nimEndpointGroup.style.display = 'block';
-        } else {
-            this.nimEndpointGroup.style.display = 'none';
+    toggleProviderSettings() {
+        // Hide all API key groups first
+        this.geminiApiGroup.style.display = 'none';
+        this.openaiApiGroup.style.display = 'none';
+        this.anthropicApiGroup.style.display = 'none';
+        this.nimApiGroup.style.display = 'none';
+        this.nimEndpointGroup.style.display = 'none';
+        
+        // Show relevant API key group based on provider
+        const provider = this.llmProvider.value;
+        switch (provider) {
+            case 'gemini':
+                this.geminiApiGroup.style.display = 'block';
+                break;
+            case 'openai':
+                this.openaiApiGroup.style.display = 'block';
+                break;
+            case 'anthropic':
+                this.anthropicApiGroup.style.display = 'block';
+                break;
+            case 'nvidia-nim':
+                this.nimApiGroup.style.display = 'block';
+                this.nimEndpointGroup.style.display = 'block';
+                break;
+            case 'ollama':
+                // No API key needed for Ollama
+                break;
         }
+    }
+
+    // Legacy function name for compatibility
+    toggleNimEndpoint() {
+        this.toggleProviderSettings();
+    }
+
+    getCurrentApiKey() {
+        switch (this.settings.provider) {
+            case 'gemini':
+                return this.settings.geminiApiKey;
+            case 'openai':
+                return this.settings.openaiApiKey;
+            case 'anthropic':
+                return this.settings.anthropicApiKey;
+            case 'nvidia-nim':
+                return this.settings.nimApiKey;
+            case 'ollama':
+                return null; // No API key needed
+            default:
+                return '';
+        }
+    }
+
+    getProviderName() {
+        const names = {
+            'gemini': 'Gemini',
+            'openai': 'OpenAI',
+            'anthropic': 'Anthropic',
+            'nvidia-nim': 'NVIDIA NIM',
+            'ollama': 'Ollama'
+        };
+        return names[this.settings.provider] || this.settings.provider;
     }
 
     updateModelOptions() {
@@ -701,8 +773,24 @@ Focus on providing actionable, specific recommendations that researchers can imm
                 { value: 'claude-3-opus', text: 'Claude 3 Opus' },
                 { value: 'claude-3-sonnet', text: 'Claude 3 Sonnet' },
                 { value: 'claude-3-haiku', text: 'Claude 3 Haiku' }
+            ],
+            'nvidia-nim': [
+                { value: 'nvidia/llama-3.1-nemotron-ultra-253b-v1', text: 'Nemotron Ultra 253B (Latest)' },
+                { value: 'qwen/qwen3-next-80b-a3b-thinking', text: 'Qwen 3 Next 80B (Thinking)' },
+                { value: 'meta/llama3-70b-instruct', text: 'Llama 3 70B Instruct' },
+                { value: 'meta/llama3-8b-instruct', text: 'Llama 3 8B Instruct' },
+                { value: 'microsoft/phi-3-medium-128k-instruct', text: 'Phi-3 Medium 128K' },
+                { value: 'microsoft/phi-3-mini-128k-instruct', text: 'Phi-3 Mini 128K' },
+                { value: 'mistralai/mixtral-8x7b-instruct-v0.1', text: 'Mixtral 8x7B Instruct' },
+                { value: 'mistralai/mistral-7b-instruct-v0.2', text: 'Mistral 7B Instruct' },
+                { value: 'google/gemma-7b', text: 'Gemma 7B' },
+                { value: 'google/codegemma-7b', text: 'CodeGemma 7B' }
+            ],
+            ollama: [
+                { value: 'llama2', text: 'Llama 2' },
+                { value: 'codellama', text: 'Code Llama' },
+                { value: 'mistral', text: 'Mistral' }
             ]
-        
         };
 
         const provider = this.llmProvider.value;
@@ -1150,9 +1238,52 @@ Focus on providing actionable, specific recommendations that researchers can imm
             this.addMessage(`🔗 **Analyzing ${urlAnalysis.urls.length} URL(s)**: ${urlAnalysis.urls.join(', ')}`, 'system', false);
         }
 
-        // Validate settings
-        if (!this.settings.apiKey && this.settings.provider !== 'ollama') {
-            this.updateStatus('Please set your API key in settings', 'error');
+        // Validate settings - check provider-specific API key
+        const currentApiKey = this.getCurrentApiKey();
+        if (!currentApiKey && this.settings.provider !== 'ollama') {
+            const providerName = this.getProviderName();
+            let helpMessage = `🔑 **API Key Required**: I need your ${providerName} API key to continue.\n\n`;
+            
+            // Add provider-specific instructions
+            switch (this.settings.provider) {
+                case 'gemini':
+                    helpMessage += `**To get your Gemini API key:**\n`;
+                    helpMessage += `1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)\n`;
+                    helpMessage += `2. Click "Create API Key"\n`;
+                    helpMessage += `3. Copy the generated key\n`;
+                    helpMessage += `4. Paste it in the Gemini API Key field in settings\n\n`;
+                    helpMessage += `**Good news**: Gemini has a generous free tier! 🎉`;
+                    break;
+                case 'nvidia-nim':
+                    helpMessage += `**To get your NVIDIA NIM API key:**\n`;
+                    helpMessage += `1. Visit [NVIDIA NGC](https://catalog.ngc.nvidia.com/)\n`;
+                    helpMessage += `2. Sign in or create an account\n`;
+                    helpMessage += `3. Generate an API key\n`;
+                    helpMessage += `4. Paste it in the NVIDIA NIM API Key field in settings\n\n`;
+                    helpMessage += `**Tip**: Leave the endpoint field empty to use NVIDIA's hosted API! 🚀`;
+                    break;
+                case 'openai':
+                    helpMessage += `**To get your OpenAI API key:**\n`;
+                    helpMessage += `1. Visit [OpenAI Platform](https://platform.openai.com/api-keys)\n`;
+                    helpMessage += `2. Sign in to your account\n`;
+                    helpMessage += `3. Create a new API key\n`;
+                    helpMessage += `4. Paste it in the OpenAI API Key field in settings\n\n`;
+                    helpMessage += `**Note**: OpenAI requires payment for API usage 💳`;
+                    break;
+                case 'anthropic':
+                    helpMessage += `**To get your Anthropic API key:**\n`;
+                    helpMessage += `1. Visit [Anthropic Console](https://console.anthropic.com/)\n`;
+                    helpMessage += `2. Sign in or create an account\n`;
+                    helpMessage += `3. Generate an API key\n`;
+                    helpMessage += `4. Paste it in the Anthropic API Key field in settings\n\n`;
+                    helpMessage += `**Note**: Anthropic requires payment for API usage 💳`;
+                    break;
+            }
+            
+            helpMessage += `\n\nClick the settings gear icon (⚙️) above to configure your API key. I'll be here waiting to help with your research! 😊`;
+            
+            this.addMessage(helpMessage, 'bot');
+            this.updateStatus(`Please set your ${providerName} API key in settings`, 'error');
             this.toggleSettings();
             return;
         }
@@ -1209,7 +1340,8 @@ Focus on providing actionable, specific recommendations that researchers can imm
     }
 
     async callLLM(message) {
-        const { provider, apiKey, nimEndpoint, model, temperature } = this.settings;
+        const { provider, nimEndpoint, model, temperature } = this.settings;
+        const apiKey = this.getCurrentApiKey();
         
         // Check if we're running on localhost (with our proxy server)
         if (window.location.hostname === 'localhost' && provider !== 'ollama') {
@@ -1908,7 +2040,10 @@ Focus on providing actionable, specific recommendations that researchers can imm
 
             // Use GitHub API to get repository information
             const repoInfo = await this.fetchGitHubRepoInfo(owner, cleanRepo);
-            const repoFiles = await this.fetchGitHubRepoFiles(owner, cleanRepo);
+            const repoStructure = await this.fetchCompleteRepoStructure(owner, cleanRepo);
+            
+            // Fetch and analyze README content
+            const readmeContent = await this.fetchReadmeContent(owner, cleanRepo, repoStructure);
             
             let analysis = `\n\n## GitHub Repository Analysis: ${owner}/${cleanRepo}\n\n`;
             
@@ -1921,9 +2056,19 @@ Focus on providing actionable, specific recommendations that researchers can imm
             analysis += `- **Last Updated**: ${new Date(repoInfo.updated_at).toLocaleDateString()}\n`;
             analysis += `- **License**: ${repoInfo.license?.name || 'No license specified'}\n\n`;
 
+            // README Content Analysis
+            if (readmeContent) {
+                analysis += `### README Analysis\n`;
+                analysis += this.analyzeReadmeContent(readmeContent);
+            }
+            
+            // Repository Structure Overview
+            analysis += `### Repository Structure\n`;
+            analysis += this.generateStructureOverview(repoStructure);
+            
             // ECM Compliance Analysis
             analysis += `### ECM Compliance Assessment\n`;
-            analysis += this.assessECMCompliance(repoFiles, repoInfo);
+            analysis += this.assessECMCompliance(repoStructure, repoInfo, readmeContent);
 
             this.addMessage(`✅ **GitHub Analysis Complete**: Found repository structure and assessed ECM compliance.`, 'system', false);
             
@@ -1956,13 +2101,120 @@ Focus on providing actionable, specific recommendations that researchers can imm
         }
     }
 
-    assessECMCompliance(files, repoInfo) {
+    async fetchCompleteRepoStructure(owner, repo, path = '', depth = 0, maxDepth = 3) {
+        if (depth > maxDepth) return [];
+        
+        try {
+            const url = path ? 
+                `https://api.github.com/repos/${owner}/${repo}/contents/${path}` :
+                `https://api.github.com/repos/${owner}/${repo}/contents`;
+                
+            const response = await fetch(url);
+            if (!response.ok) {
+                return [];
+            }
+            
+            const items = await response.json();
+            let structure = [];
+            
+            for (const item of items) {
+                const structureItem = {
+                    name: item.name,
+                    path: item.path,
+                    type: item.type,
+                    size: item.size,
+                    download_url: item.download_url
+                };
+                
+                // If it's a directory, recursively fetch its contents
+                if (item.type === 'dir' && depth < maxDepth) {
+                    structureItem.children = await this.fetchCompleteRepoStructure(
+                        owner, repo, item.path, depth + 1, maxDepth
+                    );
+                }
+                
+                structure.push(structureItem);
+            }
+            
+            return structure;
+            
+        } catch (error) {
+            console.error(`Error fetching repo structure for ${path}:`, error);
+            return [];
+        }
+    }
+
+    generateStructureOverview(structure) {
+        let overview = '';
+        const allFiles = this.flattenStructure(structure);
+        
+        // Categorize files
+        const categories = {
+            'Data Files': allFiles.filter(f => 
+                f.path.includes('/data/') || 
+                f.name.match(/\.(csv|json|txt|tsv|xlsx|h5|hdf5|pkl|pickle)$/i)
+            ),
+            'Code Files': allFiles.filter(f => 
+                f.name.match(/\.(py|r|m|jl|js|cpp|c|java|scala)$/i)
+            ),
+            'Documentation': allFiles.filter(f => 
+                f.name.match(/\.(md|rst|txt)$/i) || 
+                f.path.includes('/docs/') ||
+                f.name.toLowerCase().includes('readme')
+            ),
+            'Configuration': allFiles.filter(f => 
+                f.name.match(/\.(yml|yaml|json|toml|cfg|ini|dockerfile)$/i) ||
+                f.name.includes('requirements') ||
+                f.name.includes('environment') ||
+                f.name.includes('setup')
+            ),
+            'Results/Outputs': allFiles.filter(f => 
+                f.path.includes('/results/') || 
+                f.path.includes('/output/') ||
+                f.path.includes('/figures/') ||
+                f.name.match(/\.(png|jpg|jpeg|pdf|svg|html)$/i)
+            )
+        };
+        
+        overview += `**Total Files**: ${allFiles.length}\n\n`;
+        
+        for (const [category, files] of Object.entries(categories)) {
+            if (files.length > 0) {
+                overview += `**${category}** (${files.length} files):\n`;
+                files.slice(0, 5).forEach(file => {
+                    overview += `- ${file.path}\n`;
+                });
+                if (files.length > 5) {
+                    overview += `- ... and ${files.length - 5} more\n`;
+                }
+                overview += '\n';
+            }
+        }
+        
+        return overview;
+    }
+
+    flattenStructure(structure, result = []) {
+        for (const item of structure) {
+            if (item.type === 'file') {
+                result.push(item);
+            }
+            if (item.children) {
+                this.flattenStructure(item.children, result);
+            }
+        }
+        return result;
+    }
+
+    assessECMCompliance(repoStructure, repoInfo, readmeContent = null) {
         let score = 0;
         let maxScore = 10;
         let assessment = '';
         
-        // Check for essential files
-        const fileNames = files.map(f => f.name.toLowerCase());
+        // Get all files from the complete structure
+        const allFiles = this.flattenStructure(repoStructure);
+        const fileNames = allFiles.map(f => f.name.toLowerCase());
+        const filePaths = allFiles.map(f => f.path.toLowerCase());
         
         // README (2 points)
         if (fileNames.some(name => name.includes('readme'))) {
@@ -1973,12 +2225,61 @@ Focus on providing actionable, specific recommendations that researchers can imm
         }
 
         // Requirements/Dependencies (2 points)
-        const depFiles = ['requirements.txt', 'environment.yml', 'package.json', 'pipfile'];
+        const depFiles = ['requirements.txt', 'environment.yml', 'package.json', 'pipfile', 'setup.py'];
         if (depFiles.some(dep => fileNames.includes(dep))) {
             score += 2;
-            assessment += `✅ **Dependency management** (+2 points): Found dependency files\n`;
+            const foundDeps = depFiles.filter(dep => fileNames.includes(dep));
+            assessment += `✅ **Dependency management** (+2 points): Found ${foundDeps.join(', ')}\n`;
         } else {
             assessment += `❌ **No dependency management** (-2 points): Missing requirements files\n`;
+        }
+
+        // Data Evidence Chain (2 points) - Enhanced analysis with README content
+        const dataIndicators = filePaths.filter(path => 
+            path.includes('/data/') || 
+            path.includes('/dataset/') ||
+            path.includes('/input/') ||
+            path.includes('/raw/') ||
+            path.includes('/processed/') ||
+            fileNames.some(name => name.match(/\.(csv|json|txt|tsv|xlsx|h5|hdf5|pkl|pickle|npy|mat|dat)$/i))
+        );
+        
+        // Also check README for data source mentions
+        let readmeDataMentions = [];
+        if (readmeContent && readmeContent.content) {
+            const content = readmeContent.content.toLowerCase();
+            const dataKeywords = ['data/', 'dataset', 'download', 'source data', 'input data', 'raw data'];
+            readmeDataMentions = dataKeywords.filter(keyword => content.includes(keyword));
+        }
+        
+        if (dataIndicators.length > 0 || readmeDataMentions.length > 0) {
+            score += 2;
+            assessment += `✅ **Data Evidence Chain** (+2 points): Comprehensive data documentation found\n`;
+            if (dataIndicators.length > 0) {
+                assessment += `   📁 Data files detected: ${dataIndicators.slice(0, 3).join(', ')}${dataIndicators.length > 3 ? ` and ${dataIndicators.length - 3} more` : ''}\n`;
+            }
+            if (readmeDataMentions.length > 0) {
+                assessment += `   📖 README mentions: ${readmeDataMentions.join(', ')}\n`;
+            }
+        } else {
+            assessment += `❌ **No Data Evidence Chain** (-2 points): No clear data files, directories, or README mentions\n`;
+        }
+
+        // Code-Output Linkage (1 point)
+        const hasResults = filePaths.some(path => 
+            path.includes('/results/') || 
+            path.includes('/output/') || 
+            path.includes('/figures/')
+        );
+        const hasScripts = fileNames.some(name => name.match(/\.(py|r|m|jl|js)$/i));
+        
+        if (hasResults && hasScripts) {
+            score += 1;
+            assessment += `✅ **Code-Output Linkage** (+1 point): Found both scripts and results directories\n`;
+        } else if (hasScripts) {
+            assessment += `⚠️ **Partial Code-Output Linkage** (0 points): Scripts found but no clear results directory\n`;
+        } else {
+            assessment += `❌ **No Code-Output Linkage** (-1 point): Missing clear script-to-output connection\n`;
         }
 
         // License (1 point)
@@ -1994,36 +2295,31 @@ Focus on providing actionable, specific recommendations that researchers can imm
         assessment += `✅ **Version control** (+1 point): Using Git/GitHub\n`;
 
         // Documentation structure (1 point)
-        if (fileNames.some(name => name.includes('doc') || name === 'docs')) {
+        const docFiles = filePaths.filter(path => 
+            path.includes('/docs/') || 
+            path.includes('/documentation/') ||
+            fileNames.some(name => name.includes('doc') && name.endsWith('.md'))
+        );
+        
+        if (docFiles.length > 0) {
             score += 1;
-            assessment += `✅ **Documentation folder** (+1 point): Structured documentation\n`;
+            assessment += `✅ **Documentation structure** (+1 point): Found ${docFiles.length} documentation files\n`;
         } else {
-            assessment += `⚠️ **Limited documentation** (-1 point): No dedicated docs folder\n`;
+            assessment += `⚠️ **Limited documentation** (-1 point): No dedicated documentation structure\n`;
         }
 
         // Testing (1 point)
-        if (fileNames.some(name => name.includes('test') || name.includes('spec'))) {
+        const testFiles = filePaths.filter(path => 
+            path.includes('/test') || 
+            path.includes('/tests/') ||
+            fileNames.some(name => name.includes('test') || name.includes('spec'))
+        );
+        
+        if (testFiles.length > 0) {
             score += 1;
-            assessment += `✅ **Testing files** (+1 point): Found test files\n`;
+            assessment += `✅ **Testing infrastructure** (+1 point): Found ${testFiles.length} test files\n`;
         } else {
-            assessment += `❌ **No tests** (-1 point): Missing test files\n`;
-        }
-
-        // Configuration files (1 point)
-        const configFiles = ['.gitignore', 'dockerfile', 'docker-compose.yml', '.github'];
-        if (configFiles.some(config => fileNames.includes(config.toLowerCase()))) {
-            score += 1;
-            assessment += `✅ **Configuration files** (+1 point): Found config/CI files\n`;
-        } else {
-            assessment += `⚠️ **Basic configuration** (-1 point): Missing advanced config files\n`;
-        }
-
-        // Data management (1 point)
-        if (fileNames.some(name => name.includes('data') || name.includes('dataset'))) {
-            score += 1;
-            assessment += `✅ **Data management** (+1 point): Found data-related files\n`;
-        } else {
-            assessment += `⚠️ **No data structure** (-1 point): No clear data management\n`;
+            assessment += `❌ **No testing** (-1 point): Missing test files\n`;
         }
 
         const percentage = Math.round((score / maxScore) * 100);
@@ -2130,6 +2426,136 @@ Focus on providing actionable, specific recommendations that researchers can imm
                 url: 'https://example.com/ecm-trends'
             }];
         }
+    }
+
+    async fetchReadmeContent(owner, repo, repoStructure) {
+        try {
+            // Find README file in the repository structure
+            const allFiles = this.flattenStructure(repoStructure);
+            const readmeFile = allFiles.find(file => 
+                file.name.toLowerCase().includes('readme') && 
+                file.name.match(/\.(md|txt|rst)$/i)
+            );
+            
+            if (!readmeFile) {
+                return null;
+            }
+
+            this.addMessage(`📖 **Reading README**: ${readmeFile.name}`, 'system', false);
+
+            // Fetch the README content
+            const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${readmeFile.path}`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch README: ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            // Decode base64 content
+            const content = atob(data.content);
+            
+            return {
+                filename: readmeFile.name,
+                path: readmeFile.path,
+                content: content
+            };
+
+        } catch (error) {
+            console.error('Error fetching README content:', error);
+            return null;
+        }
+    }
+
+    analyzeReadmeContent(readmeData) {
+        const content = readmeData.content.toLowerCase();
+        let analysis = '';
+        
+        // Check for key ECM elements in README
+        const ecmElements = {
+            'Data Sources': [
+                'data', 'dataset', 'input', 'source', 'download', 'database'
+            ],
+            'Installation/Setup': [
+                'install', 'setup', 'requirement', 'environment', 'dependency'
+            ],
+            'Usage Instructions': [
+                'usage', 'how to', 'example', 'run', 'execute', 'tutorial'
+            ],
+            'Methodology': [
+                'method', 'algorithm', 'approach', 'technique', 'model'
+            ],
+            'Results/Outputs': [
+                'result', 'output', 'figure', 'plot', 'visualization', 'analysis'
+            ],
+            'Reproducibility': [
+                'reproduce', 'replicate', 'repeat', 'docker', 'container'
+            ]
+        };
+
+        analysis += `**README Content Analysis** (${readmeData.filename}):\n\n`;
+
+        let foundElements = 0;
+        for (const [category, keywords] of Object.entries(ecmElements)) {
+            const found = keywords.some(keyword => content.includes(keyword));
+            if (found) {
+                foundElements++;
+                analysis += `✅ **${category}**: Mentioned in README\n`;
+            } else {
+                analysis += `❌ **${category}**: Not clearly described\n`;
+            }
+        }
+
+        const completeness = Math.round((foundElements / Object.keys(ecmElements).length) * 100);
+        analysis += `\n**README Completeness**: ${foundElements}/${Object.keys(ecmElements).length} key areas covered (${completeness}%)\n\n`;
+
+        // Analyze specific data mentions
+        const dataKeywords = ['data/', 'dataset', 'input', 'csv', 'json', 'download'];
+        const dataMatches = dataKeywords.filter(keyword => content.includes(keyword));
+        
+        if (dataMatches.length > 0) {
+            analysis += `**Data Evidence Chain in README**: Found references to ${dataMatches.join(', ')}\n`;
+        } else {
+            analysis += `**Data Evidence Chain in README**: ⚠️ Limited data source information\n`;
+        }
+
+        // Check for workflow description
+        const workflowKeywords = ['step', 'process', 'workflow', 'pipeline', 'procedure'];
+        const hasWorkflow = workflowKeywords.some(keyword => content.includes(keyword));
+        
+        if (hasWorkflow) {
+            analysis += `**Workflow Documentation**: ✅ Process steps described\n`;
+        } else {
+            analysis += `**Workflow Documentation**: ⚠️ No clear workflow description\n`;
+        }
+
+        // Extract key sections from README for evidence chain analysis
+        const sections = this.extractReadmeSections(readmeData.content);
+        if (sections.length > 0) {
+            analysis += `\n**Key README Sections Found**:\n`;
+            sections.forEach(section => {
+                analysis += `- ${section}\n`;
+            });
+        }
+
+        analysis += '\n';
+        return analysis;
+    }
+
+    extractReadmeSections(readmeContent) {
+        const sections = [];
+        const lines = readmeContent.split('\n');
+        
+        for (const line of lines) {
+            // Look for markdown headers
+            if (line.match(/^#+\s+/)) {
+                const header = line.replace(/^#+\s+/, '').trim();
+                if (header.length > 0) {
+                    sections.push(header);
+                }
+            }
+        }
+        
+        return sections.slice(0, 10); // Limit to first 10 sections
     }
 }
 

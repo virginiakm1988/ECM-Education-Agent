@@ -35,10 +35,25 @@
                         <option value="ollama">Ollama (Local)</option>
                     </select>
                 </div>
-                <div class="setting-group">
-                    <label for="apiKey">API Key:</label>
-                    <input type="password" id="apiKey" placeholder="Enter your API key">
-                    <small>Your API key is stored locally and never sent to our servers</small>
+                <div class="setting-group" id="geminiApiGroup">
+                    <label for="geminiApiKey">Gemini API Key:</label>
+                    <input type="password" id="geminiApiKey" placeholder="Enter your Gemini API key">
+                    <small>Get your key from <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a></small>
+                </div>
+                <div class="setting-group" id="openaiApiGroup" style="display: none;">
+                    <label for="openaiApiKey">OpenAI API Key:</label>
+                    <input type="password" id="openaiApiKey" placeholder="Enter your OpenAI API key">
+                    <small>Get your key from <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a></small>
+                </div>
+                <div class="setting-group" id="anthropicApiGroup" style="display: none;">
+                    <label for="anthropicApiKey">Anthropic API Key:</label>
+                    <input type="password" id="anthropicApiKey" placeholder="Enter your Anthropic API key">
+                    <small>Get your key from <a href="https://console.anthropic.com/" target="_blank">Anthropic Console</a></small>
+                </div>
+                <div class="setting-group" id="nimApiGroup" style="display: none;">
+                    <label for="nimApiKey">NVIDIA NIM API Key:</label>
+                    <input type="password" id="nimApiKey" placeholder="Enter your NVIDIA API key">
+                    <small>Get your key from <a href="https://catalog.ngc.nvidia.com/" target="_blank">NVIDIA NGC</a></small>
                 </div>
                 <div class="setting-group" id="nimEndpointGroup" style="display: none;">
                     <label for="nimEndpoint">NIM Endpoint URL (Optional):</label>
