@@ -607,6 +607,9 @@ Focus on providing actionable, specific recommendations that researchers can imm
         // Auto-save conversation periodically
         setInterval(() => this.saveConversationHistory(), 30000); // Save every 30 seconds
 
+        // Mobile-specific improvements
+        this.addMobileOptimizations();
+
         // File upload events
         this.attachBtn.addEventListener('click', () => this.toggleFileUpload());
         this.fileUploadArea.addEventListener('click', () => this.fileInput.click());
@@ -1733,6 +1736,61 @@ Focus on providing actionable, specific recommendations that researchers can imm
             'ecm-main': 'EOP/ECM Education Agent'
         };
         return displayNames[promptType] || promptType;
+    }
+
+    addMobileOptimizations() {
+        // Prevent zoom on input focus for iOS
+        if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+            const inputs = document.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                input.addEventListener('focus', () => {
+                    input.style.fontSize = '16px';
+                });
+                input.addEventListener('blur', () => {
+                    input.style.fontSize = '';
+                });
+            });
+        }
+
+        // Improve touch scrolling
+        this.chatMessages.style.webkitOverflowScrolling = 'touch';
+        
+        // Handle mobile keyboard
+        if (window.visualViewport) {
+            const handleViewportChange = () => {
+                const viewport = window.visualViewport;
+                const chatContainer = document.querySelector('.chat-container');
+                if (chatContainer) {
+                    chatContainer.style.height = `${viewport.height - 140}px`;
+                }
+            };
+            
+            window.visualViewport.addEventListener('resize', handleViewportChange);
+        }
+
+        // Improve mobile textarea behavior
+        this.messageInput.addEventListener('touchstart', () => {
+            // Scroll to input when touched on mobile
+            setTimeout(() => {
+                this.messageInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+        });
+
+        // Handle mobile settings panel
+        let touchStartY = 0;
+        this.settingsPanel.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        });
+
+        this.settingsPanel.addEventListener('touchmove', (e) => {
+            const touchY = e.touches[0].clientY;
+            const deltaY = touchStartY - touchY;
+            
+            // Allow scrolling within settings panel
+            if (deltaY < 0 && this.settingsPanel.scrollTop === 0) {
+                e.preventDefault();
+            }
+        });
     }
 
     async searchWeb(query) {
