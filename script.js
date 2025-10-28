@@ -1029,10 +1029,21 @@ Focus on providing actionable, specific recommendations that researchers can imm
     async prepareEnhancedMessage(userMessage, urlAnalysis = null) {
         let enhancedMessage = userMessage;
         
-        // Add system prompt if selected
-        const systemPrompt = this.systemPrompts[this.settings.systemPrompt];
-        if (systemPrompt) {
-            enhancedMessage = systemPrompt + '\n\n' + enhancedMessage;
+        // Detect if user is requesting a specific analysis type and auto-switch prompt
+        const detectedPrompt = this.detectRequestedPrompt(userMessage);
+        if (detectedPrompt && detectedPrompt !== this.settings.systemPrompt) {
+            this.addMessage(`🔄 **Switching to ${this.getPromptDisplayName(detectedPrompt)} mode** for better analysis.`, 'system', false);
+            // Temporarily use the detected prompt for this message
+            const systemPrompt = this.systemPrompts[detectedPrompt];
+            if (systemPrompt) {
+                enhancedMessage = systemPrompt + '\n\n' + enhancedMessage;
+            }
+        } else {
+            // Use the current system prompt
+            const systemPrompt = this.systemPrompts[this.settings.systemPrompt];
+            if (systemPrompt) {
+                enhancedMessage = systemPrompt + '\n\n' + enhancedMessage;
+            }
         }
         
         // Add conversation context for memory
@@ -1656,6 +1667,72 @@ Focus on providing actionable, specific recommendations that researchers can imm
         if (this.suggestionCards) {
             this.suggestionCards.classList.remove('hidden');
         }
+    }
+
+    detectRequestedPrompt(userMessage) {
+        const message = userMessage.toLowerCase();
+        
+        // Detection patterns for different prompt types
+        const promptDetectors = {
+            'ecm-compliance-checker': [
+                'check ecm compliance', 'ecm chain compliance', 'compliance checker',
+                'evaluate ecm', 'assess ecm compliance', 'ecm score', 'evidence chain check',
+                'repository compliance', 'check evidence chain'
+            ],
+            'ecm-analysis': [
+                'analyze repository', 'repository analysis', 'assess repository',
+                'evaluate repository', 'repo analysis', 'analyze this repo',
+                'github analysis', 'analyze github'
+            ],
+            'ecm-explanation': [
+                'explain ecm', 'what is ecm', 'evidence chain model explanation',
+                'explain evidence chain', 'how does ecm work', 'ecm concepts',
+                'help me understand ecm'
+            ],
+            'ecm-development': [
+                'development guidance', 'how to implement', 'guide development',
+                'development suggestions', 'improve my code', 'make it ecm compliant',
+                'development help'
+            ],
+            'ecm-template': [
+                'create template', 'generate template', 'project template',
+                'ecm template', 'template for', 'scaffold project',
+                'project structure'
+            ],
+            'ecm-reorganization': [
+                'reorganize', 'restructure', 'organize code', 'reorganize repository',
+                'restructure project', 'organize files', 'improve structure'
+            ]
+        };
+
+        // Check GitHub URLs for compliance checking
+        if (message.includes('github.com') && 
+            (message.includes('compliance') || message.includes('check') || message.includes('analyze'))) {
+            return 'ecm-compliance-checker';
+        }
+
+        // Check for specific prompt patterns
+        for (const [promptType, patterns] of Object.entries(promptDetectors)) {
+            if (patterns.some(pattern => message.includes(pattern))) {
+                return promptType;
+            }
+        }
+
+        return null; // No specific prompt detected
+    }
+
+    getPromptDisplayName(promptType) {
+        const displayNames = {
+            'ecm-compliance-checker': 'ECM Chain Compliance Checker',
+            'ecm-analysis': 'Repository Analysis',
+            'ecm-explanation': 'ECM Explanation',
+            'ecm-development': 'Development Guidance',
+            'ecm-template': 'Template Generation',
+            'ecm-reorganization': 'Script Reorganization',
+            'eop-paper-expert': 'EOP Paper Expert',
+            'ecm-main': 'EOP/ECM Education Agent'
+        };
+        return displayNames[promptType] || promptType;
     }
 
     async searchWeb(query) {
