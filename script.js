@@ -32,48 +32,152 @@ class ChatBot {
         try {
             console.log('📄 Checking for EOP paper to auto-process...');
             
-            // Add a sample EOP content for demonstration
-            const eopSampleContent = `
-# Emergency Operations Plan (EOP) for Research Software
+            // Add the complete EOP paper content
+            const eopFullContent = `
+# Evidence-Oriented Programming and the Evidence Chain Method for Research Software
 
-## Core Principles
+## Introduction
 
-The Evidence Chain Model (ECM) provides a framework for maintaining computational transparency and reproducibility in research software, especially during crisis situations.
+Research software is pivotal in scientific research, generating, processing, and analyzing results intended for publications. Its increasing integration into academic activities is a testament to its significance across the scientific community, prompting a greater focus on its development practices. Many efforts have emerged to strengthen accessibility, replicability, transparency, and reusability in research software by establishing guidelines, recommending good practices, developing verification platforms, and offering educational resources. Yet these efforts tend to emphasize the software aspect, without clarifying what additional role is implied by the research aspect.
 
-### Key Components:
+We refer to this additional role as the **evidentiary role** — the idea that research software should serve as part of the evidence that supports scientific claims, beyond its technical function. This evidentiary role shifts the focus away from how to develop research software toward the question of how it should be disclosed and under what specifications, specifically what constitutes evidentiary sufficiency in the context of a given scientific claim. However, no shared specifications currently exist within the stakeholder community (including authors, editors, and reviewers) on how research software should be disclosed to support the evidentiary role.
 
-1. **Computational Transparency**: All computational steps must be documented and reproducible
-2. **Evidence Completeness**: Every claim must be supported by verifiable computational evidence  
-3. **Logical Traceability**: Clear relationships between inputs, processes, and outputs
-4. **Environmental Documentation**: Complete recording of computational environment
-5. **Provenance Tracking**: Full history of data transformations and analysis steps
+This lack of consensus has produced concrete consequences, with a notable case being Nature's decision to publish the AlphaFold3 paper without its code. As required in Nature Portfolio Editorial Policies, code supporting central claims is to be made available to reviewers upon request. Despite the stated policies, Science reported that one reviewer had only temporary access to an early web server and described repeated, unanswered requests for code. Later, Nature cited the biosecurity risks and the inclusion of pseudocode to justify the editorial decision, while DeepMind attributed the restriction to commercial considerations. This case illustrates how each stakeholder operates from a distinct position and how the absence of shared expectations can lead to tensions in disclosure decisions.
 
-### Crisis Management in Research
+Beyond tensions, the more serious concern is the gray zone created by this lack of consensus. In this zone, disclosure practices are inconsistently interpreted and selectively applied. Researchers acting in good faith may believe that, as long as they have subjectively avoided data fabrication and result concealment, there is no need to consider what constitutes sufficient disclosure. Meanwhile, mounting evidence shows how others have exploited this lack of consensus to justify withholding critical software components or data elements. In both situations, evidentiary insufficiency can persist without shared disclosure specifications. This goes beyond what case-by-case discretion can fully resolve.
 
-During emergencies, research continuity depends on:
-- Well-documented procedures
-- Accessible code repositories
-- Clear dependency management
-- Backup and recovery procedures
-- Team communication protocols
+Why, then, is there still no clear consensus on disclosure specifications? One reason lies in the wide variability of disclosure norms across scientific fields. In some fields, community standards guide software sharing and verification, while disclosure remains informal or absent in others. A second complicating factor is the influence of external disclosure barriers such as proprietary licensing, commercial interests, and biosecurity concerns, all of which introduce competing priorities that shape what can or should be disclosed. Together, these factors constrain the broader establishment of shared disclosure specifications, making it increasingly difficult to keep pace with the growing interdisciplinarity and complexity of contemporary research practice.
 
-### Implementation Guidelines
+Herein, we report the outcome of preliminary discussions involving representatives from the stakeholder community that helped initiate the preliminary development of shared disclosure specifications. Building on insights from these discussions, we propose a new conceptual model called **Evidence-Oriented Programming**. Rather than focusing on how research software is efficiently implemented, this model reorients software development and evaluation around the relationship between published scientific claims and computational artifacts (i.e., software components and data elements) that substantiate them. To operationalize this model, we introduce the **Evidence Chain Method** — a strategy for identifying and linking the evidentiary computational artifacts. We discuss its applicability across different fields and propose how it may help resolve trust gaps when external disclosure barriers arise. Overall, these efforts seek to support a shift from case-by-case disclosure decisions toward evidence-oriented specifications across the scientific ecosystem.
 
-Research teams should establish:
-- Version control systems (Git)
-- Dependency management (pip, conda, npm)
-- Containerization (Docker, Singularity)
-- Documentation systems (Markdown, Sphinx, Jupyter)
-- Testing frameworks and CI/CD
-- Data management following FAIR principles
+## From Replicability to Evidentiary Sufficiency
 
-This framework ensures research software remains accessible and reproducible even during disruptions.
+Replication has long been central to how scientists establish confidence in the scientific merit of results, supported by a shared body of community positions and guidance frameworks, such as the FAIR4RS Principles, the TOP Guidelines, the OpenAIRE Guidelines, and the COAR Framework. Thus, it is worth asking why evidentiary sufficiency, rather than replicability, is our primary concern.
+
+### Key Limitations of Replicability Focus:
+
+1. **Replicability is not universally attainable.** It is substantively undermined by external disclosure barriers and reliance on proprietary software or hardware environments, which are common realities in contemporary research ecosystems.
+
+2. **The mere success or failure of replication is an inadequate indicator of the health of science.** A successful replication may simply reproduce unrecognized systematic errors. Conversely, a failed replication does not necessarily refute the original claims, as such outcomes might arise from undocumented parameters, uncontrolled variables, or even stochastic effects.
+
+3. **Providing research software does not guarantee reproducibility.** A recent reproducibility analysis of over 2,000 R code repositories found that only 26% of scripts could be successfully executed on the first attempt, and even after code cleaning, the success rate reached only 44%.
+
+These realities highlight the need to assess scientific validity in the context of the full evidentiary structure, rather than focusing on isolated acts of replication, and they motivate our exploration of how research software can help construct and support such a context.
+
+## Evidence-Oriented Programming (EOP)
+
+While evidentiary sufficiency can, in principle, be assessed at any stage of research, the peer review stage represents the most critical juncture. Only during peer review, when publication decisions are still pending, does sufficient leverage exist to address potential evidentiary insufficiency. Once publication has occurred, it becomes significantly more challenging to request additional disclosure, and any errors that surface may be considerably harder to correct in a timely manner, potentially allowing flawed results to propagate more widely before correction can occur.
+
+For the specific context of the peer review stage, we have developed a conceptual model, called **Evidence-Oriented Programming (EOP)**, to examine the tensions between stakeholder priorities and the possibilities for negotiated consensus. Any attempt to assess evidentiary sufficiency during peer review must begin with stakeholder consensus on the scope, timing, and form of disclosure.
+
+### Scope
+
+Full openness remains a desirable ideal, but it is not always feasible or appropriate, as different stakeholder groups — authors, editors, reviewers, and external actors (such as regulatory agencies, funding bodies, and other entities that exert oversight or guidance over disclosure practices) — bring distinct and competing priorities. The final disclosure state of research software often reflects the interplay of these priorities rather than adherence to a single normative standard. EOP does not seek to persuade all stakeholders to adopt full openness. Instead, it accepts the reality of competing priorities and aims to balance legitimate constraints with the evidentiary integrity needed to support scientific claims and reduce the risk of serious downstream consequences. While the minimum bounds of acceptable disclosure remain unclear, it should exclude practices collectively regarded as unacceptable by the stakeholder community. Potentially, retraction cases can serve as concrete reference points for identifying unacceptable disclosure practices.
+
+### Timing
+
+In most cases, authors can make research software fully accessible at the time of submission, and we encourage them to do so. However, potential conflicts of interest between authors and reviewers must not be overlooked, particularly when reviewers might improperly use the research software to publish overlapping work ahead of the authors. In such cases, EOP needs to support authors in providing a mandatory disclosure schedule, explicitly indicating which components remain withheld, including associated hash values to enable verification when these components are eventually disclosed, along with a justification of the disclosure risks and their relevance to the scientific claims under review.
+
+### Form
+
+Evaluating research software poses challenges distinct from general-purpose software review. Firstly, research software often includes novel data types, modeling assumptions, or uncommon dependencies. While they also occur in general-purpose software, they become especially consequential in research settings, where their coupling to the evidentiary evaluation of scientific claims can render evaluation during peer review difficult or even infeasible. In addition, external disclosure barriers may prevent full source code availability, with critical components accessible only through compiled binaries or restricted endpoints, sometimes under time-limited conditions. Furthermore, reviewers may lack the domain expertise required to evaluate complex or poorly documented research software. Finally, single- and double-blind review formats restrict author-reviewer interaction, reducing opportunities to resolve ambiguities or negotiate appropriate disclosure standards. Accordingly, EOP must encompass a structured approach to representing research software, helping stakeholders align on how it should be disclosed, interpreted, and evaluated.
+
+## Evidence Chain Method (ECM)
+
+The Evidence Chain Method (ECM), which we developed by adapting ideas from scientific workflows, offers a concrete way to put EOP into practice. One of the core difficulties it addresses is the invisibility of evidentiary relationships: individual software modules or datasets often lack the necessary context to clarify their role in supporting a scientific claim. ECM responds to this challenge by mapping computational artifacts to the claim they support, making evidentiary structures explicit, interpretable, and available for review.
+
+### Core Structure
+
+ECM introduces a bounded structure that focuses the assessment of evidentiary sufficiency between two key points: the **starting and ending artifacts**. 
+
+- **Starting artifacts** are the input data explicitly identified in the publication, such as publicly available datasets, experimentally collected measurements, or algorithmically generated values. 
+- **Ending artifacts** are the resulting visual claims: figures, tables, or reported statistical values such as correlation coefficients or confidence levels that readers interpret as evidence in the publication. 
+
+This range makes clear that ECM is designed to ensure that, once input data are declared and used in software-mediated processes, the resulting claims can be traced and evaluated for evidentiary sufficiency. The compliance of non-software-mediated procedures and the integrity of their data collection processes fall beyond the scope of ECM.
+
+### Evidence Chain Components
+
+To link the starting and ending artifacts, ECM provides an abstracted evidence chain with seven key artifacts:
+
+1. **Input Data**: Raw datasets, measurements, or algorithmically generated values
+2. **Experimental/Analytical Process(es)**: Software-mediated transformations and analyses
+3. **Output Data**: Processed datasets, trained model archives, or intermediate data elements
+4. **Visual Data**: Subset of output data used for visualization
+5. **Plotting/Summarizing Process(es)**: Software that converts data to visual representations
+6. **Visual Claims**: Figures, tables, statistical values in the publication
+7. **Documentation**: Explanations of structure and linkages across all artifacts
+
+While these seven artifacts form a basic evidence chain, different academic fields can introduce additional complexity, especially within the experimental or analytical process(es). Depending on whether the scientific claims are algorithm-centered, this artifact may range from simple software invocations to sophisticated pipelines that incorporate the authors' proposed algorithms alongside baseline or comparator algorithms. Further, additional data elements such as hyperparameter configurations, random seeds, and initialization routines also become critical to evidentiary interpretation.
+
+### Field-Specific Adaptations
+
+These differences are not merely technical; they reflect distinct evidentiary norms and disclosure expectations across fields. ECM can accommodate such variation by adapting to the distinctive characteristics of different academic fields, enabling scientific claims to remain evidentially sound even as fields diverge.
+
+### Trade-off Presentations
+
+In practice, full disclosure of evidentiary software components and data elements may not be feasible due to ethical, legal, security, or intellectual property constraints. ECM allows trade-off presentations, such as:
+
+- Providing partial outputs
+- Operational logs
+- Intermediate output data with evidential significance
+- Typical case presentations that preserve evidentiary traceability without unrestricted access to all underlying components
+
+These mechanisms help reviewers and editors assess scientific claims when direct disclosure is constrained.
+
+### Timing Assessment
+
+To extend ECM toward the timing dimension, one can simulate selective non-disclosure by omitting or withholding a given component to evaluate its precise impact on evidentiary sufficiency. This enables the stakeholder community to assess whether, and how, delayed or withheld disclosure compromises the ability to substantiate scientific claims.
+
+## Education and Evaluation
+
+Although ECM offers a concrete operationalization of EOP, it presents many practical challenges. On the implementation side, ECM places substantial demands on authors. It requires proficiency in software design and documentation practices, as well as the ability to present them in a form that supports evaluation. These are skills that many researchers, especially those without formal training in software engineering, may lack. On the evaluation side, ECM remains an early-stage method. Its field-specific variants have yet to be systematically developed, and no large-scale quantitative studies have been conducted to assess its applicability or evidentiary effectiveness across academic fields.
+
+### Educational Tools Development
+
+To reduce the practical barriers to the implementation of ECM, we are developing educational tools that reflect how researchers actually engage with software in their academic fields. In addition to static tutorials, these resources include layered guides and workshop-style modules built around case studies, each designed to foreground the evidentiary chains most relevant to a given field. We are also testing ways to embed ECM into existing scientific workflows and exploring whether AI agents might help researchers identify and annotate relevant artifacts during software development.
+
+### Structural Implementation
+
+In parallel, we are working with software quality assurance communities and academic publishers to build the structural conditions necessary for ECM to take root. This involves developing editorial guidelines for reviewers and editors, and partnering with platforms such as Code Ocean to prototype features that support evidence chain visibility. These efforts aim not just to make ECM technically feasible, but to embed evidentiary review into the publishing process in ways that are practical and scalable.
+
+## Conditional Full Openness
+
+While EOP aims to address routine disclosure practices, we recognize that exceptional situations might warrant more decisive measures. We suggest that, prior to manuscript acceptance, authors predefine which designated audiences (e.g., regulatory bodies, ethics boards, or expert oversight panels) would be granted full access to their research software under specified conditions — namely, when such work attracts widespread attention and becomes the subject of significant technical doubts after publication. Although this proposal extends beyond the technical scope of Evidence-Oriented Programming itself, it touches on related concerns about evidentiary accountability and might warrant consideration in the development of disclosure policies.
+
+## Outlook
+
+This work reflects a concerted effort by members of the stakeholder community to address the evidentiary ambiguity that persists across research software practices. It seeks to clarify the gray zone created by the absence of consensus on disclosure, where disclosure practices are inconsistently interpreted and selectively applied, and to offer principles for mitigating its effects. The introduction of EOP and ECM is not intended to replace earlier replicability-focused efforts, but to complement them by acknowledging the real-world constraints and the need for claim-centered, disclosure-aware evaluation.
+
+We hope this work will serve as a catalyst for broader engagement across the stakeholder community in developing shared expectations around evidentiary sufficiency. Supported by incentives for structured software disclosures, such expectations can foster a research ecosystem in which software is not merely a computational tool but a verifiable contributor to scientific knowledge. Achieving this vision will require not only technical and institutional readiness, but also a shared commitment to treating research software as a site of evidentiary accountability — and acting on that commitment.
+
+## Key Takeaways for Implementation
+
+### For Researchers:
+1. **Focus on evidentiary sufficiency** rather than just replicability
+2. **Map your evidence chain** from input data to published claims
+3. **Document all computational artifacts** and their relationships
+4. **Consider disclosure timing** and potential conflicts of interest
+5. **Prepare trade-off presentations** when full disclosure isn't possible
+
+### For Reviewers:
+1. **Assess evidentiary structure** beyond just code availability
+2. **Evaluate evidence chain completeness** for scientific claims
+3. **Consider field-specific norms** and constraints
+4. **Focus on claim-supporting artifacts** rather than all software components
+
+### For Institutions:
+1. **Develop educational resources** for ECM implementation
+2. **Create structural support** for evidence-oriented practices
+3. **Establish guidelines** for evidentiary review processes
+4. **Foster stakeholder consensus** on disclosure specifications
+
+This framework represents a fundamental shift toward treating research software as a site of evidentiary accountability, moving beyond case-by-case decisions toward systematic, evidence-oriented specifications across the scientific ecosystem.
             `;
             
-            // Process the sample content
-            await this.ragSystem.processDocument('EOP_Sample_Content.md', eopSampleContent, 'text');
+            // Process the complete EOP paper content
+            await this.ragSystem.processDocument('EOP_Complete_Paper.md', eopFullContent, 'text');
             
-            this.addMessage(`📚 **EOP Knowledge Base Initialized**: I now have access to Emergency Operations Plan principles and can provide specific guidance based on EOP/ECM frameworks. Upload the full EOP paper for complete coverage.`, 'system', false);
+            this.addMessage(`📚 **Complete EOP Paper Knowledge Loaded**: I now have comprehensive access to the full Evidence-Oriented Programming paper, including detailed information about the Evidence Chain Method, stakeholder interactions, field-specific adaptations, and implementation guidelines. I can provide expert guidance based on the complete research framework.`, 'system', false);
             
         } catch (error) {
             console.error('Error auto-processing EOP paper:', error);
@@ -430,8 +534,7 @@ When users upload the EOP paper or ask about it, provide detailed analysis and p
                 { value: 'gemini-2.0-flash-exp', text: 'Gemini 2.0 Flash (Experimental)' },
                 { value: 'gemini-2.0-flash-lite', text: 'Gemini 2.0 Flash Lite' },
                 { value: 'gemini-1.5-flash-latest', text: 'Gemini 1.5 Flash Latest' },
-                { value: 'gemini-1.5-pro-latest', text: 'Gemini 1.5 Pro Latest' },
-                { value: 'gemini-pro', text: 'Gemini Pro' }
+                { value: 'gemini-1.5-pro-latest', text: 'Gemini 1.5 Pro Latest' }
             ],
             openai: [
                 { value: 'gpt-4', text: 'GPT-4' },

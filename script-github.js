@@ -32,120 +32,97 @@ class ChatBot {
     }
 
     async loadBuiltInKnowledge() {
-        // Load built-in EOP/ECM knowledge
+        // Load the complete EOP paper content
         const eopContent = `
-# Emergency Operations Plan (EOP) for Research Software
+# Evidence-Oriented Programming and the Evidence Chain Method for Research Software
 
-## Core ECM Principles
+## Introduction
 
-### 1. Computational Transparency
-All computational steps must be documented and reproducible:
-- Complete source code availability with clear documentation
-- Explicit statement of assumptions and limitations
-- Version control of all computational components
-- Clear algorithm and methodology documentation
+Research software is pivotal in scientific research, generating, processing, and analyzing results intended for publications. Its increasing integration into academic activities is a testament to its significance across the scientific community, prompting a greater focus on its development practices. Many efforts have emerged to strengthen accessibility, replicability, transparency, and reusability in research software by establishing guidelines, recommending good practices, developing verification platforms, and offering educational resources. Yet these efforts tend to emphasize the software aspect, without clarifying what additional role is implied by the research aspect.
 
-### 2. Evidence Completeness
-Every scientific claim must be supported by verifiable computational evidence:
-- Raw data preservation and accessibility
-- Complete computational workflows documented
-- Intermediate results and checkpoints saved
-- Statistical analyses and visualizations included
+We refer to this additional role as the **evidentiary role** — the idea that research software should serve as part of the evidence that supports scientific claims, beyond its technical function. This evidentiary role shifts the focus away from how to develop research software toward the question of how it should be disclosed and under what specifications, specifically what constitutes evidentiary sufficiency in the context of a given scientific claim. However, no shared specifications currently exist within the stakeholder community (including authors, editors, and reviewers) on how research software should be disclosed to support the evidentiary role.
 
-### 3. Logical Traceability
-Clear relationships between inputs, processes, and outputs:
-- Dependency mapping of all computational components
-- Data flow documentation with clear pathways
-- Process sequencing and timing documentation
-- Error handling and validation procedures
+This lack of consensus has produced concrete consequences, with a notable case being Nature's decision to publish the AlphaFold3 paper without its code. As required in Nature Portfolio Editorial Policies, code supporting central claims is to be made available to reviewers upon request. Despite the stated policies, Science reported that one reviewer had only temporary access to an early web server and described repeated, unanswered requests for code. Later, Nature cited the biosecurity risks and the inclusion of pseudocode to justify the editorial decision, while DeepMind attributed the restriction to commercial considerations. This case illustrates how each stakeholder operates from a distinct position and how the absence of shared expectations can lead to tensions in disclosure decisions.
 
-### 4. Environmental Documentation
-Complete recording of computational environment:
-- Operating system specifications and versions
-- Software versions and dependencies listed
-- Hardware configurations documented
-- Runtime parameters and settings recorded
+Beyond tensions, the more serious concern is the gray zone created by this lack of consensus. In this zone, disclosure practices are inconsistently interpreted and selectively applied. Researchers acting in good faith may believe that, as long as they have subjectively avoided data fabrication and result concealment, there is no need to consider what constitutes sufficient disclosure. Meanwhile, mounting evidence shows how others have exploited this lack of consensus to justify withholding critical software components or data elements. In both situations, evidentiary insufficiency can persist without shared disclosure specifications. This goes beyond what case-by-case discretion can fully resolve.
 
-### 5. Provenance Tracking
-Full history of data transformations and analysis steps:
-- Data lineage documentation
-- Transformation logs maintained
-- Analysis decision points recorded
-- Quality control measures implemented
+## From Replicability to Evidentiary Sufficiency
 
-## Crisis Management Framework
+Replication has long been central to how scientists establish confidence in the scientific merit of results, supported by a shared body of community positions and guidance frameworks, such as the FAIR4RS Principles, the TOP Guidelines, the OpenAIRE Guidelines, and the COAR Framework. Thus, it is worth asking why evidentiary sufficiency, rather than replicability, is our primary concern.
 
-### Risk Assessment
-Research teams must identify potential vulnerabilities:
-- Single points of failure in computational workflows
-- Personnel dependencies and knowledge silos
-- Infrastructure vulnerabilities and backup plans
-- Data loss scenarios and recovery procedures
+### Key Limitations of Replicability Focus:
 
-### Preparedness Measures
-Proactive steps to ensure research continuity:
-- Distributed backup systems across multiple locations
-- Documentation standardization across all projects
-- Cross-training of team members on critical systems
-- Emergency contact protocols and communication plans
+1. **Replicability is not universally attainable.** It is substantively undermined by external disclosure barriers and reliance on proprietary software or hardware environments, which are common realities in contemporary research ecosystems.
 
-### Implementation Guidelines
+2. **The mere success or failure of replication is an inadequate indicator of the health of science.** A successful replication may simply reproduce unrecognized systematic errors. Conversely, a failed replication does not necessarily refute the original claims, as such outcomes might arise from undocumented parameters, uncontrolled variables, or even stochastic effects.
 
-#### Version Control Systems
-- Git repositories for all code with regular commits
-- Branching strategies for collaborative development
-- Tag-based release management for versions
-- Automated backup procedures to multiple locations
+3. **Providing research software does not guarantee reproducibility.** A recent reproducibility analysis of over 2,000 R code repositories found that only 26% of scripts could be successfully executed on the first attempt, and even after code cleaning, the success rate reached only 44%.
 
-#### Dependency Management
-- Package managers (pip, conda, npm) with lock files
-- Virtual environments for isolation
-- Regular security updates and vulnerability scanning
-- Documentation of all external dependencies
+## Evidence-Oriented Programming (EOP)
 
-#### Containerization
-- Docker containers for reproducibility
-- Singularity for HPC environments
-- Container registries for distribution
-- Automated container builds and testing
+While evidentiary sufficiency can, in principle, be assessed at any stage of research, the peer review stage represents the most critical juncture. Only during peer review, when publication decisions are still pending, does sufficient leverage exist to address potential evidentiary insufficiency.
 
-#### Documentation Systems
-- README files with clear setup instructions
-- API documentation with examples
-- User guides and tutorials
-- Troubleshooting guides for common issues
+For the specific context of the peer review stage, we have developed a conceptual model, called **Evidence-Oriented Programming (EOP)**, to examine the tensions between stakeholder priorities and the possibilities for negotiated consensus. Any attempt to assess evidentiary sufficiency during peer review must begin with stakeholder consensus on the scope, timing, and form of disclosure.
 
-#### Testing and Validation
-- Unit tests for individual components
-- Integration tests for complete workflows
-- Regression tests for stability over time
-- Performance benchmarks and monitoring
+### Scope
+Full openness remains a desirable ideal, but it is not always feasible or appropriate, as different stakeholder groups — authors, editors, reviewers, and external actors — bring distinct and competing priorities. EOP accepts the reality of competing priorities and aims to balance legitimate constraints with the evidentiary integrity needed to support scientific claims.
 
-## FAIR Principles Implementation
+### Timing
+In most cases, authors can make research software fully accessible at the time of submission. However, potential conflicts of interest between authors and reviewers must not be overlooked. EOP supports authors in providing a mandatory disclosure schedule, explicitly indicating which components remain withheld, including associated hash values to enable verification.
 
-### Findability
-- Persistent identifiers (DOIs, ORCIDs)
-- Rich metadata descriptions
-- Searchable repositories
-- Clear naming conventions
+### Form
+Evaluating research software poses challenges distinct from general-purpose software review. EOP must encompass a structured approach to representing research software, helping stakeholders align on how it should be disclosed, interpreted, and evaluated.
 
-### Accessibility
-- Open source licensing
-- Standard data formats
-- API-based access
-- Clear authentication systems
+## Evidence Chain Method (ECM)
 
-### Interoperability
-- Standard data formats and protocols
-- Common vocabularies and ontologies
-- Cross-platform compatibility
-- Protocol standardization
+The Evidence Chain Method (ECM) offers a concrete way to put EOP into practice. ECM responds to the challenge of invisible evidentiary relationships by mapping computational artifacts to the claims they support, making evidentiary structures explicit, interpretable, and available for review.
 
-### Reusability
-- Clear licensing terms
-- Comprehensive documentation
-- Example implementations
-- Community support channels
+### Core Structure
+
+ECM introduces a bounded structure that focuses the assessment of evidentiary sufficiency between two key points:
+
+- **Starting artifacts**: Input data explicitly identified in the publication
+- **Ending artifacts**: Visual claims (figures, tables, statistical values) in the publication
+
+### Seven Key Artifacts
+
+1. **Input Data**: Raw datasets, measurements, or algorithmically generated values
+2. **Experimental/Analytical Process(es)**: Software-mediated transformations and analyses
+3. **Output Data**: Processed datasets, trained model archives, or intermediate data elements
+4. **Visual Data**: Subset of output data used for visualization
+5. **Plotting/Summarizing Process(es)**: Software that converts data to visual representations
+6. **Visual Claims**: Figures, tables, statistical values in the publication
+7. **Documentation**: Explanations of structure and linkages across all artifacts
+
+### Field-Specific Adaptations
+
+ECM can accommodate variation by adapting to the distinctive characteristics of different academic fields, enabling scientific claims to remain evidentially sound even as fields diverge.
+
+### Trade-off Presentations
+
+When full disclosure isn't feasible due to constraints, ECM allows:
+- Providing partial outputs
+- Operational logs
+- Intermediate output data with evidential significance
+- Typical case presentations that preserve evidentiary traceability
+
+## Implementation Guidelines for Researchers
+
+### Mapping Your Evidence Chain
+1. **Identify starting artifacts**: What input data does your research use?
+2. **Document processes**: What software transforms your data?
+3. **Track intermediate outputs**: What data is generated during processing?
+4. **Link to visual claims**: How do your figures/tables connect to the data?
+5. **Maintain documentation**: Explain all relationships and dependencies
+
+### Best Practices
+- Use version control for all computational components
+- Document software dependencies and versions
+- Maintain clear data provenance records
+- Create reproducible computational environments
+- Provide clear documentation of all processes
+
+This framework represents a fundamental shift toward treating research software as a site of evidentiary accountability, moving beyond case-by-case decisions toward systematic, evidence-oriented specifications across the scientific ecosystem.
         `;
 
         try {
@@ -384,8 +361,7 @@ Make it immediately usable while being educational about ECM principles.`
                 { value: 'gemini-2.0-flash-exp', text: 'Gemini 2.0 Flash (Experimental)' },
                 { value: 'gemini-2.0-flash-lite', text: 'Gemini 2.0 Flash Lite' },
                 { value: 'gemini-1.5-flash-latest', text: 'Gemini 1.5 Flash Latest' },
-                { value: 'gemini-1.5-pro-latest', text: 'Gemini 1.5 Pro Latest' },
-                { value: 'gemini-pro', text: 'Gemini Pro' }
+                { value: 'gemini-1.5-pro-latest', text: 'Gemini 1.5 Pro Latest' }
             ],
             openai: [
                 { value: 'gpt-4', text: 'GPT-4' },
