@@ -328,7 +328,7 @@ Make it immediately usable while being educational about ECM principles.`
         const defaultSettings = {
             provider: 'gemini',
             apiKey: '',
-            model: 'gemini-1.5-flash-latest',
+            model: 'gemini-2.0-flash-lite',
             temperature: 0.7,
             systemPrompt: 'ecm-main'
         };
@@ -359,9 +359,7 @@ Make it immediately usable while being educational about ECM principles.`
         const models = {
             gemini: [
                 { value: 'gemini-2.0-flash-exp', text: 'Gemini 2.0 Flash (Experimental)' },
-                { value: 'gemini-2.0-flash-lite', text: 'Gemini 2.0 Flash Lite' },
-                { value: 'gemini-1.5-flash-latest', text: 'Gemini 1.5 Flash Latest' },
-                { value: 'gemini-1.5-pro-latest', text: 'Gemini 1.5 Pro Latest' }
+                { value: 'gemini-2.0-flash-lite', text: 'Gemini 2.0 Flash Lite' }
             ],
             openai: [
                 { value: 'gpt-4', text: 'GPT-4' },

@@ -499,7 +499,7 @@ When users upload the EOP paper or ask about it, provide detailed analysis and p
             provider: 'gemini',
             apiKey: '',
             nimEndpoint: '',
-            model: 'gemini-1.5-flash-latest',
+            model: 'gemini-2.0-flash-lite',
             temperature: 0.7,
             systemPrompt: 'ecm-main', // Default to ECM Education Agent
             loadPreviousConversation: false // Default to NOT loading previous conversations on refresh
@@ -542,9 +542,7 @@ When users upload the EOP paper or ask about it, provide detailed analysis and p
         const models = {
             gemini: [
                 { value: 'gemini-2.0-flash-exp', text: 'Gemini 2.0 Flash (Experimental)' },
-                { value: 'gemini-2.0-flash-lite', text: 'Gemini 2.0 Flash Lite' },
-                { value: 'gemini-1.5-flash-latest', text: 'Gemini 1.5 Flash Latest' },
-                { value: 'gemini-1.5-pro-latest', text: 'Gemini 1.5 Pro Latest' }
+                { value: 'gemini-2.0-flash-lite', text: 'Gemini 2.0 Flash Lite' }
             ],
             openai: [
                 { value: 'gpt-4', text: 'GPT-4' },
@@ -555,23 +553,8 @@ When users upload the EOP paper or ask about it, provide detailed analysis and p
                 { value: 'claude-3-opus', text: 'Claude 3 Opus' },
                 { value: 'claude-3-sonnet', text: 'Claude 3 Sonnet' },
                 { value: 'claude-3-haiku', text: 'Claude 3 Haiku' }
-            ],
-            'nvidia-nim': [
-                { value: 'qwen/qwen3-next-80b-a3b-thinking', text: 'Qwen 3 Next 80B (Thinking)' },
-                { value: 'meta/llama3-70b-instruct', text: 'Llama 3 70B Instruct' },
-                { value: 'meta/llama3-8b-instruct', text: 'Llama 3 8B Instruct' },
-                { value: 'microsoft/phi-3-medium-128k-instruct', text: 'Phi-3 Medium 128K' },
-                { value: 'microsoft/phi-3-mini-128k-instruct', text: 'Phi-3 Mini 128K' },
-                { value: 'mistralai/mixtral-8x7b-instruct-v0.1', text: 'Mixtral 8x7B Instruct' },
-                { value: 'mistralai/mistral-7b-instruct-v0.2', text: 'Mistral 7B Instruct' },
-                { value: 'google/gemma-7b', text: 'Gemma 7B' },
-                { value: 'google/codegemma-7b', text: 'CodeGemma 7B' }
-            ],
-            ollama: [
-                { value: 'llama2', text: 'Llama 2' },
-                { value: 'codellama', text: 'Code Llama' },
-                { value: 'mistral', text: 'Mistral' }
             ]
+        
         };
 
         const provider = this.llmProvider.value;
